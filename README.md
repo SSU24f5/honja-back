@@ -1,6 +1,7 @@
 # 📄Backend Convention
 
 ## Layer Structure
+```text
 src
 └── main
     └── java
@@ -45,7 +46,7 @@ src
             │   ├── dto
             │   └── exception
             ...
-
+```
 ## 🌱 Branch Strategy
 
 ### Branch 종류
