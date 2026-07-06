@@ -1,6 +1,6 @@
 ---
 name: Feature
-about: 
+about: 기능개발
 title: "[Feat] "
 labels: feat
 assignees: ""
