@@ -45,4 +45,13 @@ public class Place extends BaseEntity {
         this.contentId = contentId;
         this.contentType = contentType;
     }
+
+    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType) {
+        this.mapx = mapx;
+        this.mapy = mapy;
+        this.image = image;
+        this.petPlace = petPlace;
+        this.barrierFree = barrierFree;
+        this.contentType = contentType;
+    }
 }

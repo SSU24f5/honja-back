@@ -1,11 +1,17 @@
 package com.honjaopseoyae.place.controller;
 
-import org.springframework.http.ResponseEntity;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.honjaopseoyae.global.apipayload.ApiResponse;
+import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
+import com.honjaopseoyae.place.dto.response.DetailAccessibilityDto;
+import com.honjaopseoyae.place.dto.response.PetDetailResponseDto;
+import com.honjaopseoyae.place.dto.response.TourPlaceDto;
 import com.honjaopseoyae.place.service.PlaceService;
 import com.honjaopseoyae.place.service.TourApiService;
 
@@ -18,24 +24,32 @@ public class PlaceController {
 	private final PlaceService placeService;
 	private final TourApiService tourApiService;
 
-	// @GetMapping("/barrier-free/{contentId}")
-	// public ResponseEntity<BarrierFreeResponseDto> getBarrierFree(@PathVariable String contentId) {
-	// 	BarrierFreeResponseDto response = tourApiService.getBarrierFreeInfo(contentId);
-	// 	return ResponseEntity.ok(response);
-	// }
-	//
-	//
-	// @GetMapping("/pet-friendly/{contentId}")
-	// public ResponseEntity<PetFriendlyResponseDto> getPetFriendly(@PathVariable String contentId) {
-	// 	PetFriendlyResponseDto response = tourApiService.getPetFriendlyInfo(contentId);
-	// 	return ResponseEntity.ok(response);
-	// }
+	// 무장애 단건 상세 조회 api
+	@GetMapping("/barrier-free/{contentId}")
+	public ApiResponse<TourApiCommonResponse<List<DetailAccessibilityDto>>> getBarrierFreeInfo(@PathVariable Long contentId) {
+		TourApiCommonResponse<List<DetailAccessibilityDto>> response = tourApiService.getBarrierFreeInfo(contentId);
+		return ApiResponse.onSuccess(response);
+	}
 
+	// 반려동물 단건 상세 조회 api
+	@GetMapping("/pet-friendly/{contentId}")
+	public ApiResponse<TourApiCommonResponse<List<PetDetailResponseDto>>> getPetDetailInfo(@PathVariable Long contentId) {
+		TourApiCommonResponse<List<PetDetailResponseDto>> response = tourApiService.getPetDetailInfo(contentId);
+		return ApiResponse.onSuccess(response);
+	}
 
-	// 전체 조회 api
-	// @GetMapping("/map/barrirer-free")
-	// public ResponseEntity<AreaBaseTourResponseDto> getBarrierFreePlaceMap(){
-	// 	AreaBaseTourResponseDto response = tourApiService.getBarrierFreePlaceMap();
-	// 	return ResponseEntity.ok(response);
-	// }
+	// 무장애 전체 조회 api
+	@GetMapping("/barrier-free")
+	public ApiResponse<TourApiCommonResponse<List<TourPlaceDto>>> getBarrierFreePlace() {
+		TourApiCommonResponse<List<TourPlaceDto>> response = tourApiService.getBarrierFreePlaceFromTourAPI();
+		return ApiResponse.onSuccess(response);
+	}
+
+	// 반려동물 전체 조회 api
+	@GetMapping("/pet-friendly")
+	public ApiResponse<TourApiCommonResponse<List<TourPlaceDto>>> getPetPlace() {
+		TourApiCommonResponse<List<TourPlaceDto>> response = tourApiService.getPetPlaceFromTourAPI();
+		return ApiResponse.onSuccess(response);
+	}
 }
+

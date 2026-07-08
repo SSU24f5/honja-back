@@ -14,7 +14,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class WithAreaBaseTourRequestDto {
+public class AreaBaseTourRequestDto {
 
 	private Integer numOfRows;
 
@@ -53,7 +53,6 @@ public class WithAreaBaseTourRequestDto {
 
 	private String lDongSignguCd;
 
-	@NotBlank(message = "Category system depth 1 is required.")
 	private String lclsSystm1;
 
 	private String lclsSystm2;

@@ -6,7 +6,7 @@ import lombok.ToString;
 @Getter
 @Builder
 @ToString
-public class BarrierFreeDetailRequestDto {
+public class PlaceDetailRequestDto {
 	@Builder.Default
 	private Integer numOfRows = 1;          // 한 페이지 결과 수 (단건 조하으므로 1)
 
