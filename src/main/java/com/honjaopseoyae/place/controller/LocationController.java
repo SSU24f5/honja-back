@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,14 +23,14 @@ public class LocationController {
 
 	// 위치 기반 무장애 전체 조회 api
 	@GetMapping("/barrier-free")
-	public ApiResponse<List<TourCommonResponseDto>> getLocationBasedBarrierFreePlace(@ModelAttribute UserLocationDto dto) {
+	public ApiResponse<List<TourCommonResponseDto>> getLocationBasedBarrierFreePlace(@RequestBody UserLocationDto dto) {
 		List<TourCommonResponseDto> response = locationService.getLocationBasedBarrierFreePlace(dto);
 		return ApiResponse.onSuccess(response);
 	}
 
 	// 위치 기반 반려동물 전체 조회 api
 	@GetMapping("/pet-friendly")
-	public ApiResponse<List<TourCommonResponseDto>> getLocationBasedPetPlace(@ModelAttribute UserLocationDto dto) {
+	public ApiResponse<List<TourCommonResponseDto>> getLocationBasedPetPlace(@RequestBody UserLocationDto dto) {
 		List<TourCommonResponseDto> response = locationService.getLocationBasedPetPlace(dto);
 		return ApiResponse.onSuccess(response);
 	}
