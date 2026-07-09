@@ -1,5 +1,18 @@
 package com.honjaopseoyae.place.dto.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class TourCommonResponseDto {
 	// [기본 고유 정보]
 	private String contentid;           // 콘텐츠 ID

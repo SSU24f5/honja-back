@@ -11,7 +11,7 @@ import com.honjaopseoyae.global.apipayload.ApiResponse;
 import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.place.dto.response.DetailAccessibilityDto;
 import com.honjaopseoyae.place.dto.response.PetDetailResponseDto;
-import com.honjaopseoyae.place.dto.response.TourPlaceDto;
+import com.honjaopseoyae.place.dto.response.TourCommonResponseDto;
 import com.honjaopseoyae.place.service.PlaceService;
 import com.honjaopseoyae.place.service.TourApiService;
 
@@ -40,15 +40,15 @@ public class PlaceController {
 
 	// 무장애 전체 조회 api
 	@GetMapping("/barrier-free")
-	public ApiResponse<TourApiCommonResponse<List<TourPlaceDto>>> getBarrierFreePlace() {
-		TourApiCommonResponse<List<TourPlaceDto>> response = tourApiService.getBarrierFreePlaceFromTourAPI();
+	public ApiResponse<List<TourCommonResponseDto>> getBarrierFreePlace() {
+		List<TourCommonResponseDto> response = tourApiService.getBarrierFreePlaceFromTourAPI();
 		return ApiResponse.onSuccess(response);
 	}
 
 	// 반려동물 전체 조회 api
 	@GetMapping("/pet-friendly")
-	public ApiResponse<TourApiCommonResponse<List<TourPlaceDto>>> getPetPlace() {
-		TourApiCommonResponse<List<TourPlaceDto>> response = tourApiService.getPetPlaceFromTourAPI();
+	public ApiResponse<List<TourCommonResponseDto>> getPetPlace() {
+		List<TourCommonResponseDto> response = tourApiService.getPetPlaceFromTourAPI();
 		return ApiResponse.onSuccess(response);
 	}
 }

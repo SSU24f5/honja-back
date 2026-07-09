@@ -19,6 +19,8 @@ import com.honjaopseoyae.place.dto.request.AreaBaseTourRequestDto;
 import com.honjaopseoyae.place.dto.request.PlaceDetailRequestDto;
 import com.honjaopseoyae.place.dto.response.DetailAccessibilityDto;
 import com.honjaopseoyae.place.dto.response.PetDetailResponseDto;
+import com.honjaopseoyae.place.converter.TourPlaceConverter;
+import com.honjaopseoyae.place.dto.response.TourCommonResponseDto;
 import com.honjaopseoyae.place.dto.response.TourPlaceDto;
 import com.honjaopseoyae.place.repository.TourApiRepository;
 
@@ -115,12 +117,12 @@ public class TourApiServiceImpl implements TourApiService {
 
 	//  반려동물 전체 조회 - (다른점은 IcIsystm1 이 필수인지 아닌지)
 	@Override
-	public TourApiCommonResponse<List<TourPlaceDto>> getPetPlaceFromTourAPI() {
+	public List<TourCommonResponseDto> getPetPlaceFromTourAPI() {
 		ParameterizedTypeReference<TourApiCommonResponse<List<TourPlaceDto>>> typeRef =
 			new ParameterizedTypeReference<>() {};
 
 		AreaBaseTourRequestDto requestDto = AreaBaseTourRequestDto.builder()
-			.numOfRows(40)
+			.numOfRows(400)
 			.build();
 		try {
 			TourApiCommonResponse<List<TourPlaceDto>> response = webClient.get()
@@ -142,18 +144,25 @@ public class TourApiServiceImpl implements TourApiService {
 			log.info("TourAPI 요청 성공 - 총 개수: {}",
 				(response != null && response.getResponse().getBody() != null)
 					? response.getResponse().getBody().getTotalCount() : 0);
-			return response;
+
+			if (response != null && response.getResponse() != null
+				&& response.getResponse().getBody() != null
+				&& response.getResponse().getBody().getItems() != null) {
+				List<TourPlaceDto> items = response.getResponse().getBody().getItems().getItem();
+				return TourPlaceConverter.toTourCommonResponseDtoList(items);
+			}
+			return new ArrayList<>();
 
 		} catch (Exception e) {
 			log.error("TourAPI 외부 요청 중 통신/파싱 에러 발생 : ", e);
-			return new TourApiCommonResponse<>();
+			return new ArrayList<>();
 		}
 	}
 
 
 	// 이거는 그냥 조회 잘 되는지 확인 여부차 만들어놓은거기도 하고 ...
 	@Override
-	public TourApiCommonResponse<List<TourPlaceDto>> getBarrierFreePlaceFromTourAPI() {
+	public List<TourCommonResponseDto> getBarrierFreePlaceFromTourAPI() {
 		ParameterizedTypeReference<TourApiCommonResponse<List<TourPlaceDto>>> typeRef =
 			new ParameterizedTypeReference<>() {};
 
@@ -181,11 +190,18 @@ public class TourApiServiceImpl implements TourApiService {
 			log.info("TourAPI 요청 성공 - 총 개수: {}",
 				(response != null && response.getResponse().getBody() != null)
 					? response.getResponse().getBody().getTotalCount() : 0);
-			return response;
+
+			if (response != null && response.getResponse() != null
+				&& response.getResponse().getBody() != null
+				&& response.getResponse().getBody().getItems() != null) {
+				List<TourPlaceDto> items = response.getResponse().getBody().getItems().getItem();
+				return TourPlaceConverter.toTourCommonResponseDtoList(items);
+			}
+			return new ArrayList<>();
 
 		} catch (Exception e) {
 			log.error("TourAPI 외부 요청 중 통신/파싱 에러 발생 : ", e);
-			return new TourApiCommonResponse<>();
+			return new ArrayList<>();
 		}
 	}
 

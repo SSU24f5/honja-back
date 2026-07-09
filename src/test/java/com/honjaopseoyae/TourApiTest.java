@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.place.dto.response.DetailAccessibilityDto;
-import com.honjaopseoyae.place.dto.response.TourPlaceDto;
+import com.honjaopseoyae.place.dto.response.TourCommonResponseDto;
 import com.honjaopseoyae.place.service.TourApiService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,25 +22,17 @@ class TourApiTest {
 	@Test
 	// 반려동물, 무장애 전체 조회 테스트
 	void callTourApiListTest() {
-		// TourApiCommonResponse<List<TourPlaceDto>> result = tourApiService.getBarrierFreePlaceFromTourAPI();
-		TourApiCommonResponse<List<TourPlaceDto>> result = tourApiService.getPetPlaceFromTourAPI();
+		// List<TourCommonResponseDto> result = tourApiService.getBarrierFreePlaceFromTourAPI();
+		List<TourCommonResponseDto> result = tourApiService.getPetPlaceFromTourAPI();
 
 		System.out.println("====== Tour API List Test Result ======");
 		System.out.println(result);
 		System.out.println("=======================================");
 
-		// 2. 외부 API 응답 및 결과 코드 검증
+		// 2. 외부 API 응답 및 결과 검증
 		assertThat(result).isNotNull();
-		assertThat(result.getResponse()).isNotNull();
-		assertThat(result.getResponse().getHeader()).isNotNull();
-		assertThat(result.getResponse().getHeader().getResultCode()).isEqualTo("0000");
-
-		// 추가 데이터 검증: 가져온 리스트가 비어있지 않은지 체크
-		if (result.getResponse().getBody() != null && result.getResponse().getBody().getItems() != null) {
-			List<TourPlaceDto> items = (List<TourPlaceDto>) result.getResponse().getBody().getItems().getItem();
-			assertThat(items).isNotEmpty();
-			System.out.println("가져온 첫 번째 관광지 제목: " + items.get(0).getTitle());
-		}
+		assertThat(result).isNotEmpty();
+		System.out.println("가져온 첫 번째 관광지 제목: " + result.get(0).getTitle());
 	}
 
 	@Test

@@ -5,16 +5,16 @@ import java.util.List;
 import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.place.dto.response.DetailAccessibilityDto;
 import com.honjaopseoyae.place.dto.response.PetDetailResponseDto;
-import com.honjaopseoyae.place.dto.response.TourPlaceDto;
+import com.honjaopseoyae.place.dto.response.TourCommonResponseDto;
 
 public interface TourApiService {
 	TourApiCommonResponse<List<DetailAccessibilityDto>> getBarrierFreeInfo(Long contentId);
 
 	TourApiCommonResponse<List<PetDetailResponseDto>> getPetDetailInfo(Long contentId);
 
-	TourApiCommonResponse<List<TourPlaceDto>> getPetPlaceFromTourAPI();
+	List<TourCommonResponseDto> getPetPlaceFromTourAPI();
 
-	TourApiCommonResponse<List<TourPlaceDto>> getBarrierFreePlaceFromTourAPI();
+	List<TourCommonResponseDto> getBarrierFreePlaceFromTourAPI();
 
 	void syncTourPlacesWithApi();
 }
