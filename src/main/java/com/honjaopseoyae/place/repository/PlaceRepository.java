@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.honjaopseoyae.domain.place.entity.Place;
 
-public interface TourApiRepository extends JpaRepository<Place, Long> {
+public interface PlaceRepository extends JpaRepository<Place, Long> {
 	List<Place> findAllByContentId(String contentId);
 
 	List<Place> findAllByContentIdIn(List<String> contentIds);

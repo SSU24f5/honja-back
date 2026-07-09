@@ -42,4 +42,8 @@ public class CoursePlace extends BaseEntity {
         this.place = place;
         this.sortOrder = sortOrder;
     }
+
+    public void updateSortOrder(Long sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }

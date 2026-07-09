@@ -1,7 +1,9 @@
 package com.honjaopseoyae.course.controller;
 
 import com.honjaopseoyae.course.dto.request.CourseCreateRequestDto;
+import com.honjaopseoyae.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.course.dto.response.CourseResponseDto;
+import com.honjaopseoyae.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.course.service.CourseService;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
 import jakarta.validation.Valid;
@@ -18,6 +20,12 @@ public class CourseController {
     @PostMapping
     public ApiResponse<CourseResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto) {
         CourseResponseDto response = courseService.createCourse(requestDto);
+        return ApiResponse.onSuccess(response);
+    }
+
+    @PutMapping
+    public ApiResponse<CourseUpdateResponseDto> updateCourse(@RequestBody @Valid CourseUpdateRequestDto requestDto) {
+        CourseUpdateResponseDto response = courseService.updateCourse(requestDto);
         return ApiResponse.onSuccess(response);
     }
 

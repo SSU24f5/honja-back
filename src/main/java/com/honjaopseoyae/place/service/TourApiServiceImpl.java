@@ -22,7 +22,7 @@ import com.honjaopseoyae.place.dto.response.PetDetailResponseDto;
 import com.honjaopseoyae.place.converter.TourPlaceConverter;
 import com.honjaopseoyae.place.dto.response.TourCommonResponseDto;
 import com.honjaopseoyae.place.dto.response.TourPlaceDto;
-import com.honjaopseoyae.place.repository.TourApiRepository;
+import com.honjaopseoyae.place.repository.PlaceRepository;
 
 
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class TourApiServiceImpl implements TourApiService {
 
 	@Value("${tour-api.service-key}")
 	private String serviceKey;
-	private final TourApiRepository tourApiRepository;
+	private final PlaceRepository placeRepository;
 	// 국문 관광정보 서비스 기본 URL
 	private final String BASE_URL = "https://apis.data.go.kr/B551011";
 
@@ -113,7 +113,6 @@ public class TourApiServiceImpl implements TourApiService {
 			return new TourApiCommonResponse<>();
 		}
 	}
-
 
 	//  반려동물 전체 조회 - (다른점은 IcIsystm1 이 필수인지 아닌지)
 	@Override
@@ -240,7 +239,7 @@ public class TourApiServiceImpl implements TourApiService {
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 
-		Map<String, Place> localPlaceMap = tourApiRepository.findAllByContentIdIn(apiContentIds).stream()
+		Map<String, Place> localPlaceMap = placeRepository.findAllByContentIdIn(apiContentIds).stream()
 			.collect(Collectors.toMap(Place::getContentId, Function.identity(), (existing, replacement) -> existing));
 
 		List<Place> saveList = new ArrayList<>();
@@ -277,7 +276,7 @@ public class TourApiServiceImpl implements TourApiService {
 		}
 
 		if (!saveList.isEmpty()) {
-			tourApiRepository.saveAll(saveList);
+			placeRepository.saveAll(saveList);
 			log.info("로컬 DB 동기화 완료! 추가/수정된 데이터 수: {}개", saveList.size());
 		} else {
 			log.info("변경사항이 없습니다. 로컬 DB가 최신 상태입니다.");

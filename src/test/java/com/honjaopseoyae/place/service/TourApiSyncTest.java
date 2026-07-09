@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +23,13 @@ import reactor.core.publisher.Mono;
 import com.honjaopseoyae.domain.place.entity.Place;
 import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.place.dto.response.TourPlaceDto;
-import com.honjaopseoyae.place.repository.TourApiRepository;
+import com.honjaopseoyae.place.repository.PlaceRepository;
 
 @ExtendWith(MockitoExtension.class)
 class TourApiSyncTest {
 
 	@Mock
-	private TourApiRepository tourApiRepository;
+	private PlaceRepository placeRepository;
 
 	@Mock
 	private WebClient webClient;
@@ -74,14 +73,14 @@ class TourApiSyncTest {
 				Mono.just(emptyResponse)
 			);
 
-		when(tourApiRepository.findAllByContentIdIn(anyList())).thenReturn(Collections.emptyList());
+		when(placeRepository.findAllByContentIdIn(anyList())).thenReturn(Collections.emptyList());
 
 		// When
 		tourApiService.syncTourPlacesWithApi();
 
 		// Then
 		ArgumentCaptor<List<Place>> listCaptor = ArgumentCaptor.forClass(List.class);
-		verify(tourApiRepository).saveAll(listCaptor.capture());
+		verify(placeRepository).saveAll(listCaptor.capture());
 		
 		List<Place> savedPlaces = listCaptor.getValue();
 		assertThat(savedPlaces).hasSize(1);
@@ -136,14 +135,14 @@ class TourApiSyncTest {
 				.barrierFree(true)
 				.petPlace(true)
 				.build();
-		when(tourApiRepository.findAllByContentIdIn(anyList())).thenReturn(List.of(existingPlace));
+		when(placeRepository.findAllByContentIdIn(anyList())).thenReturn(List.of(existingPlace));
 
 		// When
 		tourApiService.syncTourPlacesWithApi();
 
 		// Then
 		ArgumentCaptor<List<Place>> listCaptor = ArgumentCaptor.forClass(List.class);
-		verify(tourApiRepository).saveAll(listCaptor.capture());
+		verify(placeRepository).saveAll(listCaptor.capture());
 		
 		List<Place> savedPlaces = listCaptor.getValue();
 		assertThat(savedPlaces).hasSize(1);
@@ -195,13 +194,13 @@ class TourApiSyncTest {
 				.barrierFree(true)
 				.petPlace(false)
 				.build();
-		when(tourApiRepository.findAllByContentIdIn(anyList())).thenReturn(List.of(existingPlace));
+		when(placeRepository.findAllByContentIdIn(anyList())).thenReturn(List.of(existingPlace));
 
 		// When
 		tourApiService.syncTourPlacesWithApi();
 
 		// Then
-		verify(tourApiRepository, never()).saveAll(anyList());
+		verify(placeRepository, never()).saveAll(anyList());
 	}
 
 	private TourApiCommonResponse<List<TourPlaceDto>> createMockResponse(List<TourPlaceDto> itemsList) {
