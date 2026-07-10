@@ -2,6 +2,7 @@ package com.honjaopseoyae.domain.user.entity;
 
 
 import com.honjaopseoyae.global.common.PetSizeType;
+import com.honjaopseoyae.global.common.RoleType;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +23,12 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String nickname;              // 닉네임
 
+    @Column(nullable = false)
+    private String password;              // 비밀번호
+
+    @Enumerated(EnumType.STRING)
+    private RoleType role;                // 권한
+
     @Column(nullable = false, unique = true)
     private String email;                 // 이메일 (검증 로직은 서비스단에서)
 
@@ -36,10 +43,12 @@ public class User extends BaseEntity {
 
     @Builder
     private User(String nickname, String email, String profile,
-                 boolean petMode, boolean seniorMode, PetSizeType petSize) {
+                 boolean petMode, boolean seniorMode, PetSizeType petSize, RoleType role, String password) {
         this.nickname = nickname;
         this.email = email;
         this.profile = profile;
+        this.role = role;
+        this.password = password;
         this.petMode = petMode;
         this.seniorMode = seniorMode;
         this.petSize = petSize;
