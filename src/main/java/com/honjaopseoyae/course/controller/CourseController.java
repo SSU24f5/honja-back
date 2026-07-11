@@ -3,6 +3,7 @@ package com.honjaopseoyae.course.controller;
 import com.honjaopseoyae.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.course.dto.response.CourseCreateResponseDto;
+import com.honjaopseoyae.course.dto.response.CourseDetailResponseDto;
 import com.honjaopseoyae.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.course.service.CourseService;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
@@ -16,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class CourseController {
 
     private final CourseService courseService;
+
+    @GetMapping("/{courseId}")
+    public ApiResponse<CourseDetailResponseDto> getCourseDetail(@PathVariable Long courseId) {
+        CourseDetailResponseDto response = courseService.getCourseDetail(courseId);
+        return ApiResponse.onSuccess(response);
+    }
 
     @PostMapping
     public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto) {
