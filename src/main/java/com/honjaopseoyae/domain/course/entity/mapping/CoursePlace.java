@@ -36,6 +36,9 @@ public class CoursePlace extends BaseEntity {
     @Column(name = "sort_order")
     private Long sortOrder;              // 코스 내 순서
 
+    private String distance;
+
+    private String timeTaken;
     @Builder
     private CoursePlace(Course course, Place place, Long sortOrder) {
         this.course = course;
@@ -45,5 +48,5 @@ public class CoursePlace extends BaseEntity {
 
     public void updateSortOrder(Long sortOrder) {
         this.sortOrder = sortOrder;
-    }
+    } // 나중에 거리랑 시간 필드도 같이 업데이트 하는 걸로 수정해야함
 }

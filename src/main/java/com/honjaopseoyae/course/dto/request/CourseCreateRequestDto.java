@@ -1,5 +1,9 @@
 package com.honjaopseoyae.course.dto.request;
 
+import java.time.LocalDate;
+
+import com.honjaopseoyae.domain.course.CourseType;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -27,4 +31,13 @@ public class CourseCreateRequestDto {
 
     @NotNull(message = "야외 여부는 필수 입력값입니다.")
     private Boolean isExternal;
+
+    @NotNull
+    private LocalDate startDate;
+
+    @NotNull
+    private LocalDate endDate;
+
+    @NotNull
+    private CourseType courseType;
 }

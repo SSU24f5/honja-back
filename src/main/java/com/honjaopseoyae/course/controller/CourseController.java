@@ -2,7 +2,7 @@ package com.honjaopseoyae.course.controller;
 
 import com.honjaopseoyae.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.course.dto.request.CourseUpdateRequestDto;
-import com.honjaopseoyae.course.dto.response.CourseResponseDto;
+import com.honjaopseoyae.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.course.service.CourseService;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
@@ -18,8 +18,8 @@ public class CourseController {
     private final CourseService courseService;
 
     @PostMapping
-    public ApiResponse<CourseResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto) {
-        CourseResponseDto response = courseService.createCourse(requestDto);
+    public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto) {
+        CourseCreateResponseDto response = courseService.createCourse(requestDto);
         return ApiResponse.onSuccess(response);
     }
 

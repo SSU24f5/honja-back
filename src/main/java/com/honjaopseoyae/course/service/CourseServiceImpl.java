@@ -2,7 +2,7 @@ package com.honjaopseoyae.course.service;
 
 import com.honjaopseoyae.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.course.dto.request.CourseUpdateRequestDto;
-import com.honjaopseoyae.course.dto.response.CourseResponseDto;
+import com.honjaopseoyae.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.course.repository.CourseRepository;
@@ -39,7 +39,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Transactional
     @Override
-    public CourseResponseDto createCourse(CourseCreateRequestDto requestDto) {
+    public CourseCreateResponseDto createCourse(CourseCreateRequestDto requestDto) {
         User user = userRepository.findById(requestDto.getUserId())
                 .orElseThrow(() -> new GeneralException(CourseErrorStatus.USER_NOT_FOUND));
 
@@ -49,10 +49,13 @@ public class CourseServiceImpl implements CourseService {
                 .description(requestDto.getDescription())
                 .isPublic(requestDto.getIsPublic())
                 .isExternal(requestDto.getIsExternal())
+                .startDate(requestDto.getStartDate())
+                .endDate(requestDto.getEndDate())
+                .courseType(requestDto.getCourseType())
                 .build();
 
         Course savedCourse = courseRepository.save(course);
-        return CourseResponseDto.from(savedCourse);
+        return CourseCreateResponseDto.from(savedCourse);
     }
 
     @Transactional
