@@ -19,5 +19,7 @@ public class CourseUpdateResponseDto {
 		private Long coursePlaceId;
 		private Long placeId;
 		private Integer order;
+		private String distance;
+		private String timeTaken;
 	}
 }

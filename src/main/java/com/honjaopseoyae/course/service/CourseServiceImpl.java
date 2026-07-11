@@ -1,5 +1,6 @@
 package com.honjaopseoyae.course.service;
 
+import com.honjaopseoyae.config.KakaoMobilityClient;
 import com.honjaopseoyae.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.course.dto.response.CourseCreateResponseDto;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,6 +38,7 @@ public class CourseServiceImpl implements CourseService {
     private final CoursePlaceRepository coursePlaceRepository;
     private final PlaceRepository placeRepository;
     private final TourApiService tourApiService;
+    private final KakaoMobilityClient kakaoMobilityClient;
 
     @Transactional
     @Override
@@ -76,6 +79,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         // 3. 결과 반환
+        updateCoursePlaceRouteInfos(updatedCoursePlaces);
         return buildUpdateResponse(course, updatedCoursePlaces);
     }
 
@@ -110,6 +114,37 @@ public class CourseServiceImpl implements CourseService {
             existing.updateSortOrder((long) item.getOrder());
             return coursePlaceRepository.save(existing);
         }
+    }
+
+    private void updateCoursePlaceRouteInfos(List<CoursePlace> coursePlaces) {
+        coursePlaces.sort(Comparator.comparing(CoursePlace::getSortOrder));
+
+        CoursePlace previous = null;
+        for (CoursePlace current : coursePlaces) {
+            if (previous == null) {
+                current.updateRouteInfo(null, null);
+            } else {
+                KakaoMobilityClient.RouteSummary summary = kakaoMobilityClient.getRouteSummary(
+                        previous.getPlace().getMapx(),
+                        previous.getPlace().getMapy(),
+                        current.getPlace().getMapx(),
+                        current.getPlace().getMapy()
+                );
+
+                if (summary == null) {
+                    current.updateRouteInfo(null, null);
+                } else {
+                    current.updateRouteInfo(
+                            toKilometers(summary.distanceMeters()),
+                            toMinutes(summary.durationSeconds())
+                    );
+                }
+            }
+
+            previous = current;
+        }
+
+        coursePlaceRepository.saveAll(coursePlaces);
     }
 
     private Place getOrCreatePlace(CourseUpdateRequestDto.CoursePlaceItem item) {
@@ -168,6 +203,8 @@ public class CourseServiceImpl implements CourseService {
                         .coursePlaceId(cp.getId())
                         .placeId(cp.getPlace().getId())
                         .order(cp.getSortOrder().intValue())
+                        .distance(cp.getDistance())
+                        .timeTaken(cp.getTimeTaken())
                         .build())
                 .collect(Collectors.toList());
 
@@ -199,5 +236,13 @@ public class CourseServiceImpl implements CourseService {
         } catch (NumberFormatException e) {
             return 0.0;
         }
+    }
+
+    private String toKilometers(int distanceMeters) {
+        return String.format(Locale.US, "%.1f", distanceMeters / 1000.0);
+    }
+
+    private String toMinutes(int durationSeconds) {
+        return String.valueOf((int) Math.ceil(durationSeconds / 60.0));
     }
 }

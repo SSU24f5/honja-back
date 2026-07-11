@@ -1,6 +1,5 @@
 package com.honjaopseoyae.domain.course.entity.mapping;
 
-
 import com.honjaopseoyae.domain.course.entity.Course;
 import com.honjaopseoyae.domain.place.entity.Place;
 import com.honjaopseoyae.global.entity.BaseEntity;
@@ -15,9 +14,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * 코스에 담긴 장소
- */
 @Entity
 @Table(name = "course_place")
 @Getter
@@ -26,27 +22,35 @@ public class CoursePlace extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
-    private Course course;                // 코스 아이디
+    private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
-    private Place place;                  // 장소 아이디
+    private Place place;
 
-    // 원본 컬럼명 'order' 는 SQL 예약어라 'sort_order' 로 지정했습니다.
     @Column(name = "sort_order")
-    private Long sortOrder;              // 코스 내 순서
+    private Long sortOrder;
 
     private String distance;
 
     private String timeTaken;
+
     @Builder
-    private CoursePlace(Course course, Place place, Long sortOrder) {
+    private CoursePlace(Course course, Place place, Long sortOrder,
+                        String distance, String timeTaken) {
         this.course = course;
         this.place = place;
         this.sortOrder = sortOrder;
+        this.distance = distance;
+        this.timeTaken = timeTaken;
     }
 
     public void updateSortOrder(Long sortOrder) {
         this.sortOrder = sortOrder;
-    } // 나중에 거리랑 시간 필드도 같이 업데이트 하는 걸로 수정해야함
+    }
+
+    public void updateRouteInfo(String distance, String timeTaken) {
+        this.distance = distance;
+        this.timeTaken = timeTaken;
+    }
 }

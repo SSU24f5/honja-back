@@ -1,7 +1,10 @@
 package com.honjaopseoyae.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -9,6 +12,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 public class WebClientConfig {
 
 	@Bean
+	@Primary
 	public WebClient tourApiWebClient() {
 		String baseUrl = "https://apis.data.go.kr/B551011";
 		DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(baseUrl);
@@ -17,6 +21,17 @@ public class WebClientConfig {
 		return WebClient.builder()
 			.uriBuilderFactory(factory)
 			.baseUrl(baseUrl)
+			.build();
+	}
+
+	@Bean
+	public WebClient kakaoMobilityWebClient(
+		@Value("${kakao.base-url}") String baseUrl,
+		@Value("${kakao.rest-api-key}") String restApiKey
+	) {
+		return WebClient.builder()
+			.baseUrl(baseUrl)
+			.defaultHeader(HttpHeaders.AUTHORIZATION, "KakaoAK " + restApiKey)
 			.build();
 	}
 }
