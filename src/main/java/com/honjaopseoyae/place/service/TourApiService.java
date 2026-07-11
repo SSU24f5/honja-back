@@ -16,6 +16,8 @@ public interface TourApiService {
 
 	List<TourCommonResponseDto> getBarrierFreePlaceFromTourAPI();
 
+	List<TourCommonResponseDto> getCommonPlaceFromTourAPI();
+
 	void syncTourPlacesWithApi();
 }
 

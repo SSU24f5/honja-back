@@ -36,6 +36,20 @@ class TourApiTest {
 	}
 
 	@Test
+	// 국문 관광정보 전체 조회 테스트
+	void callCommonPlaceApiTest() {
+		List<TourCommonResponseDto> result = tourApiService.getCommonPlaceFromTourAPI();
+
+		System.out.println("====== Tour API Common Place Test Result ======");
+		System.out.println(result);
+		System.out.println("==============================================");
+
+		assertThat(result).isNotNull();
+		assertThat(result).isNotEmpty();
+		System.out.println("가져온 첫 번째 관광지 제목: " + result.get(0).getTitle());
+	}
+
+	@Test
 	void callTBarrierFreeDetailTest() {
 		//곽재해수욕장
 		Long testContentId = 127870L;

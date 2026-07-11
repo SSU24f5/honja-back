@@ -158,6 +158,49 @@ public class TourApiServiceImpl implements TourApiService {
 		}
 	}
 
+	@Override
+	public List<TourCommonResponseDto> getCommonPlaceFromTourAPI() {
+		ParameterizedTypeReference<TourApiCommonResponse<List<TourPlaceDto>>> typeRef =
+			new ParameterizedTypeReference<>() {};
+
+		AreaBaseTourRequestDto requestDto = AreaBaseTourRequestDto.builder()
+			.numOfRows(1130)
+			.build();
+		try {
+			TourApiCommonResponse<List<TourPlaceDto>> response = webClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path("/KorService2/areaBasedList2")
+					.queryParam("serviceKey", serviceKey)
+					.queryParam("numOfRows", requestDto.getNumOfRows())
+					.queryParam("pageNo", requestDto.getPageNo())
+					.queryParam("MobileOS", requestDto.getMobileOS())
+					.queryParam("MobileApp", requestDto.getMobileApp())
+					.queryParam("_type", requestDto.get_type())
+					.queryParam("LDongRegnCd", requestDto.getLDongRegnCd())
+					.queryParam("lclsSystm1", requestDto.getLclsSystm1())
+					.build())
+				.retrieve()
+				.bodyToMono(typeRef)
+				.block();
+
+			log.info("TourAPI KorService2 요청 성공 - 총 개수: {}",
+				(response != null && response.getResponse().getBody() != null)
+					? response.getResponse().getBody().getTotalCount() : 0);
+
+			if (response != null && response.getResponse() != null
+				&& response.getResponse().getBody() != null
+				&& response.getResponse().getBody().getItems() != null) {
+				List<TourPlaceDto> items = response.getResponse().getBody().getItems().getItem();
+				return TourPlaceConverter.toTourCommonResponseDtoList(items);
+			}
+			return new ArrayList<>();
+
+		} catch (Exception e) {
+			log.error("TourAPI KorService2 외부 요청 중 통신/파싱 에러 발생 : ", e);
+			return new ArrayList<>();
+		}
+	}
+
 
 	// 이거는 그냥 조회 잘 되는지 확인 여부차 만들어놓은거기도 하고 ...
 	@Override
