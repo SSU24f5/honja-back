@@ -1,7 +1,7 @@
 package com.honjaopseoyae.course.dto.response;
 
-import com.honjaopseoyae.domain.course.CourseType;
-import com.honjaopseoyae.domain.course.entity.Course;
+import com.honjaopseoyae.course.entity.CourseType;
+import com.honjaopseoyae.course.entity.Course;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

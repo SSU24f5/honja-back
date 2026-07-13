@@ -2,7 +2,9 @@ package com.honjaopseoyae.course.dto.request;
 
 import java.time.LocalDate;
 
-import com.honjaopseoyae.domain.course.CourseType;
+import com.honjaopseoyae.course.entity.Course;
+import com.honjaopseoyae.course.entity.CourseType;
+import com.honjaopseoyae.domain.user.entity.User;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,4 +42,17 @@ public class CourseCreateRequestDto {
 
     @NotNull
     private CourseType courseType;
+
+    public static Course toEntity(CourseCreateRequestDto requestDto, User user) {
+        return Course.builder()
+                .user(user)
+                .name(requestDto.getName())
+                .description(requestDto.getDescription())
+                .isPublic(requestDto.getIsPublic())
+                .isExternal(requestDto.getIsExternal())
+                .startDate(requestDto.getStartDate())
+                .endDate(requestDto.getEndDate())
+                .courseType(requestDto.getCourseType())
+                .build();
+    }
 }
