@@ -169,7 +169,7 @@ public class TourApiServiceImpl implements TourApiService {
 			Place localPlace = localPlaceMap.get(dto.getContentid());
 
 			if (localPlace == null) {
-				saveList.add(convertToPlace(dto, false, true));
+				saveList.add(dto.toEntity(false, true));
 				continue;
 			}
 
@@ -246,17 +246,7 @@ public class TourApiServiceImpl implements TourApiService {
 			.build();
 	}
 
-	private Place convertToPlace(TourPlaceDto dto, boolean isPetPlace, boolean isBarrierFree) {
-		return Place.builder()
-			.contentId(dto.getContentid())
-			.contentType(parseContentType(dto.getContenttypeid()))
-			.mapx(parseDouble(dto.getMapx()))
-			.mapy(parseDouble(dto.getMapy()))
-			.image(dto.getFirstimage())
-			.petPlace(isPetPlace)
-			.barrierFree(isBarrierFree)
-			.build();
-	}
+
 
 	private double parseDouble(String value) {
 		if (value == null || value.isBlank()) {
