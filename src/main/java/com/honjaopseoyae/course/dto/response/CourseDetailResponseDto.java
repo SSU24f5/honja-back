@@ -3,7 +3,11 @@ package com.honjaopseoyae.course.dto.response;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.honjaopseoyae.domain.course.CourseType;
+import com.honjaopseoyae.course.entity.Course;
+import com.honjaopseoyae.course.entity.CourseType;
+import com.honjaopseoyae.course.entity.mapping.CoursePlace;
+import com.honjaopseoyae.place.entity.Place;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,26 +23,75 @@ public class CourseDetailResponseDto {
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private CourseType courseType;
-	private List<CoursePlaceItem> places;
+
+	private List<CourseDateItem> dates;
+
+	public static CourseDetailResponseDto of(
+		Course course,
+		List<CourseDateItem> dates
+	) {
+		return CourseDetailResponseDto.builder()
+			.courseId(course.getId())
+			.name(course.getName())
+			.description(course.getDescription())
+			.isPublic(course.isPublic())
+			.isExternal(course.isExternal())
+			.startDate(course.getStartDate())
+			.endDate(course.getEndDate())
+			.courseType(course.getCourseType())
+			.dates(dates)
+			.build();
+	}
+
+	@Getter
+	@Builder
+	public static class CourseDateItem {
+
+		private LocalDate date;
+		private List<CoursePlaceItem> places;
+
+		public static CourseDateItem of(
+			LocalDate date,
+			List<CoursePlaceItem> places
+		) {
+			return CourseDateItem.builder()
+				.date(date)
+				.places(places)
+				.build();
+		}
+	}
 
 	@Getter
 	@Builder
 	public static class CoursePlaceItem {
+
 		private Long coursePlaceId;
 		private Long placeId;
 		private int order;
 		private String distance;
 		private String timeTaken;
-		
-		// 장소 상세 정보
+
 		private String contentId;
-		private String title;
-		private String addr1;
-		private String addr2;
 		private double mapx;
 		private double mapy;
-		private String image;
 		private boolean petPlace;
 		private boolean barrierFree;
+
+		public static CoursePlaceItem from(CoursePlace coursePlace) {
+			Place place = coursePlace.getPlace();
+
+			return CoursePlaceItem.builder()
+				.coursePlaceId(coursePlace.getId())
+				.placeId(place.getId())
+				.order(coursePlace.getSortOrder().intValue())
+				.distance(coursePlace.getDistance())
+				.timeTaken(coursePlace.getTimeTaken())
+				.contentId(place.getContentId())
+				.mapx(place.getMapx())
+				.mapy(place.getMapy())
+				.petPlace(place.isPetPlace())
+				.barrierFree(place.isBarrierFree())
+				.build();
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.honjaopseoyae.course.service;
 
+import com.honjaopseoyae.common.UserReader;
 import com.honjaopseoyae.config.KakaoMobilityClient;
 import com.honjaopseoyae.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.course.dto.request.CourseUpdateRequestDto;
@@ -8,16 +9,16 @@ import com.honjaopseoyae.course.dto.response.CourseDetailResponseDto;
 import com.honjaopseoyae.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.course.repository.CourseRepository;
-import com.honjaopseoyae.domain.course.entity.Course;
-import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
-import com.honjaopseoyae.domain.place.entity.Place;
+import com.honjaopseoyae.course.entity.Course;
+import com.honjaopseoyae.course.entity.mapping.CoursePlace;
+import com.honjaopseoyae.place.entity.Place;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.apipayload.domain.CourseErrorStatus;
 import com.honjaopseoyae.global.apipayload.exception.GeneralException;
-import com.honjaopseoyae.member.repository.UserRepository;
 import com.honjaopseoyae.place.repository.PlaceRepository;
-import com.honjaopseoyae.place.repository.TourPlaceRepository;
 import com.honjaopseoyae.place.service.TourApiService;
+import com.honjaopseoyae.place.support.CourseFinder;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,104 +30,64 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.TreeMap;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class CourseServiceImpl implements CourseService {
-
+    private final CourseFinder courseFinder;
     private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+    private final UserReader userReader;
     private final CoursePlaceRepository coursePlaceRepository;
     private final PlaceRepository placeRepository;
     private final TourApiService tourApiService;
     private final KakaoMobilityClient kakaoMobilityClient;
-    private final TourPlaceRepository tourPlaceRepository;
 
     @Transactional(readOnly = true)
     @Override
     public CourseDetailResponseDto getCourseDetail(Long courseId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_NOT_FOUND));
+        Course course = courseFinder.findById(courseId);
 
-        List<CoursePlace> coursePlaces = coursePlaceRepository.findAllByCourseId(courseId);
-        coursePlaces.sort(Comparator.comparing(CoursePlace::getSortOrder));
+        List<CoursePlace> coursePlaces =
+            coursePlaceRepository.findAllByCourseId(courseId);
 
-        List<CourseDetailResponseDto.CoursePlaceItem> placeItems = coursePlaces.stream()
-                .map(cp -> {
-                    Place place = cp.getPlace();
-                    String title = null;
-                    String addr1 = null;
-                    String addr2 = null;
+        List<CourseDetailResponseDto.CourseDateItem> dateItems =
+            coursePlaces.stream()
+                .collect(Collectors.groupingBy(CoursePlace::getDate, TreeMap::new, Collectors.toList()))
+                .entrySet()
+                .stream()
+                .map(entry ->
+                    CourseDetailResponseDto.CourseDateItem.of(
+                        entry.getKey(),
+                        entry.getValue()
+                            .stream()
+                            .sorted(Comparator.comparing(
+                                CoursePlace::getSortOrder
+                            ))
+                            .map(CourseDetailResponseDto.CoursePlaceItem::from)
+                            .toList()
+                    )
+                )
+                .toList();
 
-                    if (place.getContentId() != null) {
-                        var tourPlaceOpt = tourPlaceRepository.findById(place.getContentId());
-                        if (tourPlaceOpt.isPresent()) {
-                            var tourPlace = tourPlaceOpt.get();
-                            title = tourPlace.getTitle();
-                            addr1 = tourPlace.getAddr1();
-                            addr2 = tourPlace.getAddr2();
-                        }
-                    }
-
-                    return CourseDetailResponseDto.CoursePlaceItem.builder()
-                            .coursePlaceId(cp.getId())
-                            .placeId(place.getId())
-                            .order(cp.getSortOrder().intValue())
-                            .distance(cp.getDistance())
-                            .timeTaken(cp.getTimeTaken())
-                            .contentId(place.getContentId())
-                            .title(title)
-                            .addr1(addr1)
-                            .addr2(addr2)
-                            .mapx(place.getMapx())
-                            .mapy(place.getMapy())
-                            .image(place.getImage())
-                            .petPlace(place.isPetPlace())
-                            .barrierFree(place.isBarrierFree())
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        return CourseDetailResponseDto.builder()
-                .courseId(course.getId())
-                .name(course.getName())
-                .description(course.getDescription())
-                .isPublic(course.isPublic())
-                .isExternal(course.isExternal())
-                .startDate(course.getStartDate())
-                .endDate(course.getEndDate())
-                .courseType(course.getCourseType())
-                .places(placeItems)
-                .build();
+        return CourseDetailResponseDto.of(course, dateItems);
     }
 
     @Transactional
     @Override
     public CourseCreateResponseDto createCourse(CourseCreateRequestDto requestDto) {
-        User user = userRepository.findById(requestDto.getUserId())
-                .orElseThrow(() -> new GeneralException(CourseErrorStatus.USER_NOT_FOUND));
-
-        Course course = Course.builder()
-                .user(user)
-                .name(requestDto.getName())
-                .description(requestDto.getDescription())
-                .isPublic(requestDto.getIsPublic())
-                .isExternal(requestDto.getIsExternal())
-                .startDate(requestDto.getStartDate())
-                .endDate(requestDto.getEndDate())
-                .courseType(requestDto.getCourseType())
-                .build();
-
+        User user = userReader.getById(requestDto.getUserId());
+        Course course = CourseCreateRequestDto.toEntity(requestDto, user);
         Course savedCourse = courseRepository.save(course);
+
         return CourseCreateResponseDto.from(savedCourse);
     }
 
     @Transactional
     @Override
     public CourseUpdateResponseDto updateCourse(CourseUpdateRequestDto requestDto) {
-        Course course = courseRepository.findById(requestDto.getCourseId())
-                .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_NOT_FOUND));
+        Course course = courseFinder.findById(requestDto.getCourseId());
 
         List<CoursePlace> existingCoursePlaces = coursePlaceRepository.findAllByCourseId(course.getId());
 
@@ -278,8 +239,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     @Override
     public void deleteCourse(Long courseId, Long userId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_NOT_FOUND));
+        Course course = courseFinder.findById(courseId);
 
         if (course.getUser() == null || !course.getUser().getId().equals(userId)) {
             throw new GeneralException(CourseErrorStatus.COURSE_NOT_WRITER);

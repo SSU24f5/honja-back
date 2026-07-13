@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.honjaopseoyae.domain.place.entity.Place;
+import com.honjaopseoyae.place.entity.Place;
 
 public interface PlaceRepository extends JpaRepository<Place, Long> {
 	List<Place> findAllByContentId(String contentId);

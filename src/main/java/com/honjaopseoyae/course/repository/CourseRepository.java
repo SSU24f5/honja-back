@@ -3,7 +3,7 @@ package com.honjaopseoyae.course.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.honjaopseoyae.domain.course.entity.Course;
+import com.honjaopseoyae.course.entity.Course;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
