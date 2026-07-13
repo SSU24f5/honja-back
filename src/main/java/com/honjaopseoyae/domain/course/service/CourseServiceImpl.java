@@ -19,7 +19,7 @@ import com.honjaopseoyae.global.apipayload.exception.GeneralException;
 import com.honjaopseoyae.domain.place.entity.PlaceType;
 import com.honjaopseoyae.domain.place.repository.PlaceRepository;
 import com.honjaopseoyae.domain.place.service.TourApiService;
-import com.honjaopseoyae.domain.place.support.CourseFinder;
+import com.honjaopseoyae.domain.course.support.CourseFinder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
