@@ -50,6 +50,26 @@ class TourApiTest {
 	}
 
 	@Test
+	// 카테고리별 조회 테스트
+	void callPlaceByCategoryApiTest() {
+		String testContentTypeId = "12"; // 관광지
+
+		List<TourCommonResponseDto> petResult = tourApiService.getPetPlaceByCategoryFromTourAPI(testContentTypeId);
+		List<TourCommonResponseDto> barrierFreeResult = tourApiService.getBarrierFreePlaceByCategoryFromTourAPI(testContentTypeId);
+		List<TourCommonResponseDto> commonResult = tourApiService.getCommonPlaceByCategoryFromTourAPI(testContentTypeId);
+
+		System.out.println("====== Tour API Category-based Place Test Result ======");
+		System.out.println("Pet Places count: " + petResult.size());
+		System.out.println("Barrier Free Places count: " + barrierFreeResult.size());
+		System.out.println("Common Places count: " + commonResult.size());
+		System.out.println("======================================================");
+
+		assertThat(petResult).isNotNull();
+		assertThat(barrierFreeResult).isNotNull();
+		assertThat(commonResult).isNotNull();
+	}
+
+	@Test
 	void callTBarrierFreeDetailTest() {
 		//곽재해수욕장
 		Long testContentId = 127870L;

@@ -18,6 +18,12 @@ public interface TourApiService {
 
 	List<TourCommonResponseDto> getCommonPlaceFromTourAPI();
 
+	List<TourCommonResponseDto> getPetPlaceByCategoryFromTourAPI(String contentTypeId);
+
+	List<TourCommonResponseDto> getBarrierFreePlaceByCategoryFromTourAPI(String contentTypeId);
+
+	List<TourCommonResponseDto> getCommonPlaceByCategoryFromTourAPI(String contentTypeId);
+
 	void syncTourPlacesWithApi();
 }
 

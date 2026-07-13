@@ -1,0 +1,118 @@
+package com.honjaopseoyae.domain.place.client;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
+import com.honjaopseoyae.domain.place.dto.request.AreaBaseTourRequestDto;
+import com.honjaopseoyae.domain.place.dto.request.PlaceDetailRequestDto;
+import com.honjaopseoyae.domain.place.dto.response.TourPlaceDto;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class TourApiClient {
+
+	private final WebClient tourApiWebClient;
+
+	@Value("${tour-api.service-key}")
+	private String serviceKey;
+
+	private static final ParameterizedTypeReference<
+		TourApiCommonResponse<List<TourPlaceDto>>
+		> TOUR_PLACE_TYPE = new ParameterizedTypeReference<>() {};
+
+
+	public TourApiCommonResponse<List<TourPlaceDto>> getPlaces(
+		String path,
+		AreaBaseTourRequestDto request
+	) {
+		try {
+			return tourApiWebClient.get()
+				.uri(uriBuilder -> {
+
+					var builder = uriBuilder
+						.path(path)
+						.queryParam("serviceKey", serviceKey)
+						.queryParam("numOfRows", request.getNumOfRows())
+						.queryParam("pageNo", request.getPageNo())
+						.queryParam("MobileOS", request.getMobileOS())
+						.queryParam("MobileApp", request.getMobileApp())
+						.queryParam("_type", request.get_type())
+						.queryParam("LDongRegnCd", request.getLDongRegnCd())
+						.queryParam("lclsSystm1", request.getLclsSystm1());
+
+					if (request.getAreaCode() != null) {
+						builder.queryParam(
+							"areaCode",
+							request.getAreaCode()
+						);
+					}
+
+					if (request.getContentTypeId() != null) {
+						builder.queryParam(
+							"contentTypeId",
+							request.getContentTypeId()
+						);
+					}
+
+					return builder.build();
+				})
+				.retrieve()
+				.bodyToMono(TOUR_PLACE_TYPE)
+				.block();
+
+		} catch (Exception e) {
+			log.error(
+				"TourAPI 장소 요청 실패 - path: {}",
+				path,
+				e
+			);
+
+			return null;
+		}
+	}
+
+
+	public <T> TourApiCommonResponse<List<T>> getDetail(
+		String path,
+		PlaceDetailRequestDto request,
+		ParameterizedTypeReference<
+			TourApiCommonResponse<List<T>>
+			> typeReference
+	) {
+		try {
+			return tourApiWebClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path(path)
+					.queryParam("serviceKey", serviceKey)
+					.queryParam("numOfRows", request.getNumOfRows())
+					.queryParam("pageNo", request.getPageNo())
+					.queryParam("MobileOS", request.getMobileOS())
+					.queryParam("MobileApp", request.getMobileApp())
+					.queryParam("_type", request.getType())
+					.queryParam("contentId", request.getContentId())
+					.build())
+				.retrieve()
+				.bodyToMono(typeReference)
+				.block();
+
+		} catch (Exception e) {
+			log.error(
+				"TourAPI 상세 요청 실패 - path: {}, contentId: {}",
+				path,
+				request.getContentId(),
+				e
+			);
+
+			return null;
+		}
+	}
+}
