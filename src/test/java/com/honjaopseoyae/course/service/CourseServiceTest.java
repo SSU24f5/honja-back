@@ -22,11 +22,9 @@ import com.honjaopseoyae.course.entity.CourseType;
 import com.honjaopseoyae.course.entity.Course;
 import com.honjaopseoyae.course.entity.mapping.CoursePlace;
 import com.honjaopseoyae.place.entity.Place;
-import com.honjaopseoyae.place.entity.TourPlace;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.member.repository.UserRepository;
 import com.honjaopseoyae.place.repository.PlaceRepository;
-import com.honjaopseoyae.place.repository.TourPlaceRepository;
 
 @SpringBootTest
 @Transactional
@@ -46,9 +44,6 @@ class CourseServiceTest {
 
 	@Autowired
 	private CoursePlaceRepository coursePlaceRepository;
-
-	@Autowired
-	private TourPlaceRepository tourPlaceRepository;
 
 	private User testUser;
 	private Course testCourse;
@@ -130,7 +125,10 @@ class CourseServiceTest {
 		ReflectionTestUtils.setField(item2, "order", 2);
 		places.add(item2);
 
-		ReflectionTestUtils.setField(requestDto, "places", places);
+		CourseUpdateRequestDto.CourseDateItem dateItem = new CourseUpdateRequestDto.CourseDateItem();
+		ReflectionTestUtils.setField(dateItem, "date", testCourse.getStartDate());
+		ReflectionTestUtils.setField(dateItem, "places", places);
+		ReflectionTestUtils.setField(requestDto, "dates", List.of(dateItem));
 
 		// When
 		CourseUpdateResponseDto response = courseService.updateCourse(requestDto);
@@ -138,7 +136,8 @@ class CourseServiceTest {
 		// Then
 		assertThat(response).isNotNull();
 		assertThat(response.getCourseId()).isEqualTo(testCourse.getId());
-		assertThat(response.getPlaces()).hasSize(2);
+		assertThat(response.getDates()).hasSize(1);
+		assertThat(response.getDates().get(0).getPlaces()).hasSize(2);
 
 		// 저장된 CoursePlace들 조회해서 검증
 		List<CoursePlace> updatedCoursePlaces = coursePlaceRepository.findAllByCourseId(testCourse.getId());
@@ -167,16 +166,7 @@ class CourseServiceTest {
 	@Test
 	void getCourseDetailTest() {
 		// Given
-		// 1. TourPlace 상세 정보 DB 저장
-		TourPlace tourPlace1 = TourPlace.builder()
-				.contentId("11111")
-				.title("서울시청")
-				.addr1("서울특별시 중구 태평로1가 31")
-				.addr2("본관")
-				.build();
-		tourPlaceRepository.save(tourPlace1);
-
-		// 2. CoursePlace들 등록
+		// CoursePlace들 등록
 		CoursePlace cp1 = CoursePlace.builder()
 				.course(testCourse)
 				.place(place1)

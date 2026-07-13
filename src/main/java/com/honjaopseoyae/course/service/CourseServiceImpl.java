@@ -15,6 +15,7 @@ import com.honjaopseoyae.place.entity.Place;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.apipayload.domain.CourseErrorStatus;
 import com.honjaopseoyae.global.apipayload.exception.GeneralException;
+import com.honjaopseoyae.place.entity.PlaceType;
 import com.honjaopseoyae.place.repository.PlaceRepository;
 import com.honjaopseoyae.place.service.TourApiService;
 import com.honjaopseoyae.place.support.CourseFinder;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -89,19 +91,31 @@ public class CourseServiceImpl implements CourseService {
     public CourseUpdateResponseDto updateCourse(CourseUpdateRequestDto requestDto) {
         Course course = courseFinder.findById(requestDto.getCourseId());
 
-        List<CoursePlace> existingCoursePlaces = coursePlaceRepository.findAllByCourseId(course.getId());
+        List<CoursePlace> existingCoursePlaces =
+            coursePlaceRepository.findAllByCourseId(course.getId());
 
-        // 1. 삭제할 CoursePlace 제거
-        deleteRemovedPlaces(existingCoursePlaces, requestDto.getPlaces());
+        List<CourseUpdateRequestDto.CoursePlaceItem> incomingPlaces =
+            requestDto.getDates().stream()
+                .flatMap(dateItem -> dateItem.getPlaces().stream())
+                .toList();
 
-        // 2. 신규 생성 및 기존 항목 순서 업데이트
-        List<CoursePlace> updatedCoursePlaces = new ArrayList<>();
-        for (CourseUpdateRequestDto.CoursePlaceItem item : requestDto.getPlaces()) {
-            updatedCoursePlaces.add(processCoursePlaceItem(course, item, existingCoursePlaces));
-        }
+        deleteRemovedPlaces(existingCoursePlaces, incomingPlaces);
 
-        // 3. 결과 반환
+        List<CoursePlace> updatedCoursePlaces =
+            requestDto.getDates().stream()
+                .flatMap(dateItem ->
+                    dateItem.getPlaces().stream()
+                        .map(item -> processCoursePlaceItem(
+                            course,
+                            dateItem.getDate(),
+                            item,
+                            existingCoursePlaces
+                        ))
+                )
+                .toList();
+
         updateCoursePlaceRouteInfos(updatedCoursePlaces);
+
         return buildUpdateResponse(course, updatedCoursePlaces);
     }
 
@@ -118,79 +132,128 @@ public class CourseServiceImpl implements CourseService {
         coursePlaceRepository.deleteAll(toDelete);
     }
 
-    private CoursePlace processCoursePlaceItem(Course course, CourseUpdateRequestDto.CoursePlaceItem item, List<CoursePlace> existingPlaces) {
+    private CoursePlace processCoursePlaceItem(
+        Course course,
+        LocalDate date,
+        CourseUpdateRequestDto.CoursePlaceItem item,
+        List<CoursePlace> existingPlaces
+    ) {
         if (item.isNewItem()) {
             Place place = getOrCreatePlace(item);
-            CoursePlace newCoursePlace = CoursePlace.builder()
-                    .course(course)
-                    .place(place)
-                    .sortOrder((long) item.getOrder())
-                    .build();
-            return coursePlaceRepository.save(newCoursePlace);
-        } else {
-            CoursePlace existing = existingPlaces.stream()
-                    .filter(cp -> cp.getId().equals(item.getCoursePlaceId()))
-                    .findFirst()
-                    .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_NOT_FOUND));
 
-            existing.updateSortOrder((long) item.getOrder());
-            return coursePlaceRepository.save(existing);
+            CoursePlace coursePlace = CoursePlace.builder()
+                .course(course)
+                .place(place)
+                .date(date)
+                .sortOrder(item.getOrder().longValue())
+                .orderType(item.getOrderType())
+                .build();
+
+            return coursePlaceRepository.save(coursePlace);
         }
+
+        CoursePlace existing = existingPlaces.stream()
+            .filter(cp -> cp.getId().equals(item.getCoursePlaceId()))
+            .findFirst()
+            .orElseThrow(() ->
+                new GeneralException(
+                    CourseErrorStatus.COURSE_PLACE_NOT_FOUND
+                ));
+
+        existing.updateSortOrder(item.getOrder().longValue(), item.getOrderType());
+        existing.updateDate(date);
+
+        return existing;
     }
 
     private void updateCoursePlaceRouteInfos(List<CoursePlace> coursePlaces) {
-        coursePlaces.sort(Comparator.comparing(CoursePlace::getSortOrder));
-
-        CoursePlace previous = null;
-        for (CoursePlace current : coursePlaces) {
-            if (previous == null) {
-                current.updateRouteInfo(null, null);
-            } else {
-                KakaoMobilityClient.RouteSummary summary = kakaoMobilityClient.getRouteSummary(
-                        previous.getPlace().getMapx(),
-                        previous.getPlace().getMapy(),
-                        current.getPlace().getMapx(),
-                        current.getPlace().getMapy()
+        coursePlaces.stream()
+            .collect(Collectors.groupingBy(
+                CoursePlace::getDate,
+                TreeMap::new,
+                Collectors.toList()
+            ))
+            .values()
+            .forEach(dateCoursePlaces -> {
+                dateCoursePlaces.sort(
+                    Comparator.comparing(CoursePlace::getSortOrder)
                 );
 
-                if (summary == null) {
-                    current.updateRouteInfo(null, null);
-                } else {
-                    current.updateRouteInfo(
+                CoursePlace previous = null;
+                for (CoursePlace current : dateCoursePlaces) {
+                    if (previous == null) {
+                        current.updateRouteInfo(null, null);
+                        previous = current;
+                        continue;
+                    }
+
+                    KakaoMobilityClient.RouteSummary summary =
+                        kakaoMobilityClient.getRouteSummary(
+                            previous.getPlace().getMapx(),
+                            previous.getPlace().getMapy(),
+                            current.getPlace().getMapx(),
+                            current.getPlace().getMapy()
+                        );
+
+                    if (summary == null) {
+                        current.updateRouteInfo(null, null);
+                    } else {
+                        current.updateRouteInfo(
                             toKilometers(summary.distanceMeters()),
                             toMinutes(summary.durationSeconds())
-                    );
-                }
-            }
+                        );
+                    }
 
-            previous = current;
-        }
+                    previous = current;
+                }
+            });
 
         coursePlaceRepository.saveAll(coursePlaces);
     }
 
-    private Place getOrCreatePlace(CourseUpdateRequestDto.CoursePlaceItem item) {
-        // 1. placeId가 전달된 경우: 기존 저장되어 있는 장소 조회 (없으면 예외 발생)
+    private Place getOrCreatePlace(
+        CourseUpdateRequestDto.CoursePlaceItem item
+    ) {
+        // 이미 저장된 Place
         if (item.getPlaceId() != null) {
             return placeRepository.findById(item.getPlaceId())
-                    .orElseThrow(() -> new GeneralException(CourseErrorStatus.PLACE_NOT_FOUND));
+                .orElseThrow(() ->
+                    new GeneralException(
+                        CourseErrorStatus.PLACE_NOT_FOUND
+                    ));
         }
 
-        // 2. placeId가 없고 contentId가 전달된 경우: 로컬 DB 조회 후 없으면 신규 저장
-        if (item.getContentId() != null && !item.getContentId().trim().isEmpty()) {
-            List<Place> dbPlaces = placeRepository.findAllByContentId(item.getContentId());
-            if (!dbPlaces.isEmpty()) {
-                return dbPlaces.get(0);
-            }
+        return switch (item.getPlaceType()) {
+            case TOUR_PLACE -> getOrCreateTourPlace(item);
+            case INDIVIDUAL_PLACE -> createIndividualPlace(item);
+        };
+    }
 
-            // 3. 로컬 DB에 없으면 TourAPI 단건 호출 및 위경도 값을 기반으로 DB 생성
-            Place place = fetchAndSavePlaceFromApi(item);
-            if (place != null) {
-                return place;
-            }
+    private Place getOrCreateTourPlace(
+        CourseUpdateRequestDto.CoursePlaceItem item
+    ) {
+        if (item.getContentId() == null || item.getContentId().isBlank()) {
+            throw new GeneralException(
+                CourseErrorStatus.PLACE_NOT_FOUND
+            );
         }
 
-        throw new GeneralException(CourseErrorStatus.PLACE_NOT_FOUND);
+        return placeRepository.findByContentId(item.getContentId())
+            .orElseGet(() -> fetchAndSavePlaceFromApi(item));
+    }
+
+    private Place createIndividualPlace(
+        CourseUpdateRequestDto.CoursePlaceItem item
+    ) {
+        return placeRepository.save(
+            Place.builder()
+                .mapx(parseDouble(item.getMapx()))
+                .mapy(parseDouble(item.getMapy()))
+                .placeType(PlaceType.INDIVIDUAL_PLACE)
+                .petPlace(false)
+                .barrierFree(false)
+                .build()
+        );
     }
 
 
@@ -217,23 +280,37 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
-    private CourseUpdateResponseDto buildUpdateResponse(Course course, List<CoursePlace> updatedPlaces) {
-        updatedPlaces.sort(Comparator.comparing(CoursePlace::getSortOrder));
+    private CourseUpdateResponseDto buildUpdateResponse(
+        Course course,
+        List<CoursePlace> updatedPlaces
+    ) {
+        List<CourseUpdateResponseDto.CourseDateResult> dateResults =
+            updatedPlaces.stream()
+                .collect(Collectors.groupingBy(
+                    CoursePlace::getDate,
+                    TreeMap::new,
+                    Collectors.toList()
+                ))
+                .entrySet()
+                .stream()
+                .map(entry ->
+                    CourseUpdateResponseDto.CourseDateResult.of(
+                        entry.getKey(),
+                        entry.getValue()
+                            .stream()
+                            .sorted(Comparator.comparing(
+                                CoursePlace::getSortOrder
+                            ))
+                            .map(
+                                CourseUpdateResponseDto
+                                    .CoursePlaceResult::from
+                            )
+                            .toList()
+                    )
+                )
+                .toList();
 
-        List<CourseUpdateResponseDto.CoursePlaceResult> placeResults = updatedPlaces.stream()
-                .map(cp -> CourseUpdateResponseDto.CoursePlaceResult.builder()
-                        .coursePlaceId(cp.getId())
-                        .placeId(cp.getPlace().getId())
-                        .order(cp.getSortOrder().intValue())
-                        .distance(cp.getDistance())
-                        .timeTaken(cp.getTimeTaken())
-                        .build())
-                .collect(Collectors.toList());
-
-        return CourseUpdateResponseDto.builder()
-                .courseId(course.getId())
-                .places(placeResults)
-                .build();
+        return CourseUpdateResponseDto.of(course, dateResults);
     }
 
     @Transactional

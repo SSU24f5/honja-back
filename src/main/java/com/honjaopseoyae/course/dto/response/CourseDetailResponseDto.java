@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.honjaopseoyae.course.entity.Course;
 import com.honjaopseoyae.course.entity.CourseType;
+import com.honjaopseoyae.course.entity.OrderType;
 import com.honjaopseoyae.course.entity.mapping.CoursePlace;
 import com.honjaopseoyae.place.entity.Place;
 
@@ -68,6 +69,7 @@ public class CourseDetailResponseDto {
 		private Long coursePlaceId;
 		private Long placeId;
 		private int order;
+		private OrderType orderType;
 		private String distance;
 		private String timeTaken;
 
@@ -84,6 +86,7 @@ public class CourseDetailResponseDto {
 				.coursePlaceId(coursePlace.getId())
 				.placeId(place.getId())
 				.order(coursePlace.getSortOrder().intValue())
+				.orderType(coursePlace.getOrderType())
 				.distance(coursePlace.getDistance())
 				.timeTaken(coursePlace.getTimeTaken())
 				.contentId(place.getContentId())

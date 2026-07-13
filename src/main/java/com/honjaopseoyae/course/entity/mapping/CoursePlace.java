@@ -3,10 +3,13 @@ package com.honjaopseoyae.course.entity.mapping;
 import java.time.LocalDate;
 
 import com.honjaopseoyae.course.entity.Course;
+import com.honjaopseoyae.course.entity.OrderType;
 import com.honjaopseoyae.place.entity.Place;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -39,20 +42,27 @@ public class CoursePlace extends BaseEntity {
 
     private LocalDate date;
 
+    @Enumerated(EnumType.STRING)
+    private OrderType orderType;
+
     @Builder
     private CoursePlace(Course course, Place place, Long sortOrder,
-                        String distance, String timeTaken, LocalDate date) {
+                        String distance, String timeTaken, LocalDate date, OrderType orderType) {
         this.course = course;
         this.place = place;
         this.sortOrder = sortOrder;
         this.distance = distance;
         this.timeTaken = timeTaken;
         this.date = date;
+        this.orderType = orderType;
     }
 
-    public void updateSortOrder(Long sortOrder) {
+    public void updateSortOrder(Long sortOrder, OrderType orderType) {
         this.sortOrder = sortOrder;
+        this.orderType = orderType;
     }
+
+    public void updateDate(LocalDate date){this.date = date;}
 
     public void updateRouteInfo(String distance, String timeTaken) {
         this.distance = distance;
