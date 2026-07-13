@@ -6,6 +6,7 @@ import com.honjaopseoyae.domain.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseListResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
@@ -73,6 +74,17 @@ public class CourseServiceImpl implements CourseService {
                 .toList();
 
         return CourseDetailResponseDto.of(course, dateItems);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CourseListResponseDto> getMyCourses(Long userId) {
+        userReader.getById(userId);
+
+        return courseRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
+            .stream()
+            .map(CourseListResponseDto::from)
+            .toList();
     }
 
     @Transactional
