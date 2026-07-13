@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.honjaopseoyae.domain.place.entity.Place;
+import com.honjaopseoyae.place.entity.Place;
 import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.place.dto.request.AreaBaseTourRequestDto;
 import com.honjaopseoyae.place.dto.request.PlaceDetailRequestDto;

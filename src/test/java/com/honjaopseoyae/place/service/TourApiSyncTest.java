@@ -20,7 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import com.honjaopseoyae.domain.place.entity.Place;
+import com.honjaopseoyae.place.entity.Place;
 import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.place.dto.response.TourPlaceDto;
 import com.honjaopseoyae.place.repository.PlaceRepository;
