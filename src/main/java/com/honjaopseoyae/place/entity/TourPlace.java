@@ -1,4 +1,4 @@
-package com.honjaopseoyae.domain.place.entity;
+package com.honjaopseoyae.place.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

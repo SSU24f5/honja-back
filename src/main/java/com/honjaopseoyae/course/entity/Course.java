@@ -1,9 +1,8 @@
-package com.honjaopseoyae.domain.course.entity;
+package com.honjaopseoyae.course.entity;
 
 
 import java.time.LocalDate;
 
-import com.honjaopseoyae.domain.course.CourseType;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -47,6 +46,7 @@ public class Course extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private CourseType courseType;
+
 
     @Builder
     private Course(User user, String name, String description,

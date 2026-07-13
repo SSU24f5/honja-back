@@ -1,7 +1,9 @@
-package com.honjaopseoyae.domain.course.entity.mapping;
+package com.honjaopseoyae.course.entity.mapping;
 
-import com.honjaopseoyae.domain.course.entity.Course;
-import com.honjaopseoyae.domain.place.entity.Place;
+import java.time.LocalDate;
+
+import com.honjaopseoyae.course.entity.Course;
+import com.honjaopseoyae.place.entity.Place;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,14 +37,17 @@ public class CoursePlace extends BaseEntity {
 
     private String timeTaken;
 
+    private LocalDate date;
+
     @Builder
     private CoursePlace(Course course, Place place, Long sortOrder,
-                        String distance, String timeTaken) {
+                        String distance, String timeTaken, LocalDate date) {
         this.course = course;
         this.place = place;
         this.sortOrder = sortOrder;
         this.distance = distance;
         this.timeTaken = timeTaken;
+        this.date = date;
     }
 
     public void updateSortOrder(Long sortOrder) {

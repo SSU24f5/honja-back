@@ -1,4 +1,4 @@
-package com.honjaopseoyae.domain.place.entity;
+package com.honjaopseoyae.place.entity;
 
 
 import com.honjaopseoyae.global.entity.BaseEntity;
@@ -34,9 +34,11 @@ public class Place extends BaseEntity {
 
     private Integer contentType;         // 카테고리 코드
 
+    private PlaceType placeType;
+
     @Builder
     private Place(double mapx, double mapy, String image, boolean petPlace,
-                  boolean barrierFree, String contentId, Integer contentType) {
+                  boolean barrierFree, String contentId, Integer contentType,PlaceType placeType) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
@@ -44,6 +46,7 @@ public class Place extends BaseEntity {
         this.barrierFree = barrierFree;
         this.contentId = contentId;
         this.contentType = contentType;
+        this.placeType = placeType;
     }
 
     public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType) {
