@@ -1,11 +1,15 @@
 package com.honjaopseoyae.domain.course.entity.mapping;
 
+import java.time.LocalDate;
 
 import com.honjaopseoyae.domain.course.entity.Course;
+import com.honjaopseoyae.domain.course.entity.OrderType;
 import com.honjaopseoyae.domain.place.entity.Place;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -15,9 +19,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * 코스에 담긴 장소
- */
 @Entity
 @Table(name = "course_place")
 @Getter
@@ -26,20 +27,45 @@ public class CoursePlace extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
-    private Course course;                // 코스 아이디
+    private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
-    private Place place;                  // 장소 아이디
+    private Place place;
 
-    // 원본 컬럼명 'order' 는 SQL 예약어라 'sort_order' 로 지정했습니다.
     @Column(name = "sort_order")
-    private Long sortOrder;              // 코스 내 순서
+    private Long sortOrder;
+
+    private String distance;
+
+    private String timeTaken;
+
+    private LocalDate date;
+
+    @Enumerated(EnumType.STRING)
+    private OrderType orderType;
 
     @Builder
-    private CoursePlace(Course course, Place place, Long sortOrder) {
+    private CoursePlace(Course course, Place place, Long sortOrder,
+                        String distance, String timeTaken, LocalDate date, OrderType orderType) {
         this.course = course;
         this.place = place;
         this.sortOrder = sortOrder;
+        this.distance = distance;
+        this.timeTaken = timeTaken;
+        this.date = date;
+        this.orderType = orderType;
+    }
+
+    public void updateSortOrder(Long sortOrder, OrderType orderType) {
+        this.sortOrder = sortOrder;
+        this.orderType = orderType;
+    }
+
+    public void updateDate(LocalDate date){this.date = date;}
+
+    public void updateRouteInfo(String distance, String timeTaken) {
+        this.distance = distance;
+        this.timeTaken = timeTaken;
     }
 }

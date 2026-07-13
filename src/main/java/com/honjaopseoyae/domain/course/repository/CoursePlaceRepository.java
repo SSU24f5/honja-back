@@ -1,0 +1,13 @@
+package com.honjaopseoyae.domain.course.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
+
+import java.util.List;
+
+@Repository
+public interface CoursePlaceRepository extends JpaRepository<CoursePlace, Long> {
+	List<CoursePlace> findAllByCourseId(Long courseId);
+}

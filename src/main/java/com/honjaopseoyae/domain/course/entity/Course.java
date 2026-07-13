@@ -1,10 +1,14 @@
 package com.honjaopseoyae.domain.course.entity;
 
 
+import java.time.LocalDate;
+
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -37,13 +41,25 @@ public class Course extends BaseEntity {
     @Column(name = "is_external")
     private boolean isExternal;          // 야외 여부
 
+    private LocalDate startDate;
+    private LocalDate endDate;
+
+    @Enumerated(EnumType.STRING)
+    private CourseType courseType;
+
+
     @Builder
     private Course(User user, String name, String description,
-                   boolean isPublic, boolean isExternal) {
+                   boolean isPublic, boolean isExternal,
+                   LocalDate startDate, LocalDate endDate,
+                   CourseType courseType) {
         this.user = user;
         this.name = name;
         this.description = description;
         this.isPublic = isPublic;
         this.isExternal = isExternal;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.courseType = courseType;
     }
 }
