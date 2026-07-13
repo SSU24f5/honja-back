@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import com.honjaopseoyae.place.dto.common.TourApiCommonResponse;
-import com.honjaopseoyae.place.dto.response.DetailAccessibilityDto;
-import com.honjaopseoyae.place.dto.response.TourCommonResponseDto;
-import com.honjaopseoyae.place.service.TourApiService;
+import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
+import com.honjaopseoyae.domain.place.dto.response.DetailAccessibilityDto;
+import com.honjaopseoyae.domain.place.dto.response.TourCommonResponseDto;
+import com.honjaopseoyae.domain.place.service.TourApiService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

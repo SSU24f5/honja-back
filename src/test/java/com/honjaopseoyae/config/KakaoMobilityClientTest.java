@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.honjaopseoyae.course.dto.response.KakaoDirectionsResponseDto;
+import com.honjaopseoyae.domain.course.dto.response.KakaoDirectionsResponseDto;
 
 @SpringBootTest
 class KakaoMobilityClientTest {

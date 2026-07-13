@@ -13,18 +13,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.honjaopseoyae.course.dto.request.CourseUpdateRequestDto;
-import com.honjaopseoyae.course.dto.response.CourseDetailResponseDto;
-import com.honjaopseoyae.course.dto.response.CourseUpdateResponseDto;
-import com.honjaopseoyae.course.repository.CoursePlaceRepository;
-import com.honjaopseoyae.course.repository.CourseRepository;
-import com.honjaopseoyae.course.entity.CourseType;
-import com.honjaopseoyae.course.entity.Course;
-import com.honjaopseoyae.course.entity.mapping.CoursePlace;
-import com.honjaopseoyae.place.entity.Place;
+import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
+import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
+import com.honjaopseoyae.domain.course.repository.CourseRepository;
+import com.honjaopseoyae.domain.course.entity.CourseType;
+import com.honjaopseoyae.domain.course.entity.Course;
+import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
+import com.honjaopseoyae.domain.course.service.CourseService;
+import com.honjaopseoyae.domain.place.entity.Place;
 import com.honjaopseoyae.domain.user.entity.User;
-import com.honjaopseoyae.member.repository.UserRepository;
-import com.honjaopseoyae.place.repository.PlaceRepository;
+import com.honjaopseoyae.domain.user.repository.UserRepository;
+import com.honjaopseoyae.domain.place.repository.PlaceRepository;
 
 @SpringBootTest
 @Transactional

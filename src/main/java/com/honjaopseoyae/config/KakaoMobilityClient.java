@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.honjaopseoyae.course.dto.response.KakaoDirectionsResponseDto;
+import com.honjaopseoyae.domain.course.dto.response.KakaoDirectionsResponseDto;
 
 @Component
 public class KakaoMobilityClient {

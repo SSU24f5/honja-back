@@ -1,7 +1,7 @@
 package com.honjaopseoyae.domain.user.entity.mapping;
 
 
-import com.honjaopseoyae.course.entity.Course;
+import com.honjaopseoyae.domain.course.entity.Course;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Entity;
