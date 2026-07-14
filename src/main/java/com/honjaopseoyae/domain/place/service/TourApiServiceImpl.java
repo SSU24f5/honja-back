@@ -79,37 +79,6 @@ public class TourApiServiceImpl implements TourApiService {
 	}
 
 	@Override
-	public List<TourCommonResponseDto> getPetPlaceByCategoryFromTourAPI(String contentTypeId) {
-		AreaBaseTourRequestDto requestDto = AreaBaseTourRequestDto.builder()
-			.numOfRows(400)
-			.contentTypeId(contentTypeId)
-			.build();
-
-		return fetchPlaces(PET_PATH, requestDto);
-	}
-
-	@Override
-	public List<TourCommonResponseDto> getBarrierFreePlaceByCategoryFromTourAPI(String contentTypeId) {
-		AreaBaseTourRequestDto requestDto = AreaBaseTourRequestDto.builder()
-			.numOfRows(111)
-			.lclsSystm1("NA")
-			.contentTypeId(contentTypeId)
-			.build();
-
-		return fetchPlaces(BARRIER_FREE_PATH, requestDto);
-	}
-
-	@Override
-	public List<TourCommonResponseDto> getCommonPlaceByCategoryFromTourAPI(String contentTypeId) {
-		AreaBaseTourRequestDto requestDto = AreaBaseTourRequestDto.builder()
-			.numOfRows(400)
-			.contentTypeId(contentTypeId)
-			.build();
-
-		return fetchPlaces(COMMON_PATH, requestDto);
-	}
-
-	@Override
 	public List<TourCommonResponseDto> getBarrierFreePlaceFromTourAPI() {
 		AreaBaseTourRequestDto requestDto = AreaBaseTourRequestDto.builder()
 			.numOfRows(111)

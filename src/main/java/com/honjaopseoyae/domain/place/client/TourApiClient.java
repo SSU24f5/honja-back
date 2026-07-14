@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.domain.place.dto.request.AreaBaseTourRequestDto;
+import com.honjaopseoyae.domain.place.dto.request.LocationBasedRequestDto;
 import com.honjaopseoyae.domain.place.dto.request.PlaceDetailRequestDto;
 import com.honjaopseoyae.domain.place.dto.response.TourPlaceDto;
 
@@ -50,32 +51,19 @@ public class TourApiClient {
 						.queryParam("lclsSystm1", request.getLclsSystm1());
 
 					if (request.getAreaCode() != null) {
-						builder.queryParam(
-							"areaCode",
-							request.getAreaCode()
-						);
+						builder.queryParam("areaCode", request.getAreaCode());
 					}
 
 					if (request.getContentTypeId() != null) {
-						builder.queryParam(
-							"contentTypeId",
-							request.getContentTypeId()
-						);
+						builder.queryParam("contentTypeId", request.getContentTypeId());
 					}
 
 					return builder.build();
-				})
-				.retrieve()
-				.bodyToMono(TOUR_PLACE_TYPE)
+				}).retrieve().bodyToMono(TOUR_PLACE_TYPE)
 				.block();
 
 		} catch (Exception e) {
-			log.error(
-				"TourAPI 장소 요청 실패 - path: {}",
-				path,
-				e
-			);
-
+			log.error("TourAPI 장소 요청 실패 - path: {}", path, e);
 			return null;
 		}
 	}
@@ -112,6 +100,46 @@ public class TourApiClient {
 				e
 			);
 
+			return null;
+		}
+	}
+
+	public TourApiCommonResponse<List<TourPlaceDto>> getLocationPlaces(
+		String path,
+		LocationBasedRequestDto request
+	) {
+		try {
+			return tourApiWebClient.get()
+				.uri(uriBuilder -> {
+					var builder = uriBuilder
+						.path(path)
+						.queryParam("serviceKey", serviceKey)
+						.queryParam("numOfRows", request.getNumOfRows())
+						.queryParam("pageNo", request.getPageNo())
+						.queryParam("MobileOS", request.getMobileOS())
+						.queryParam("MobileApp", request.getMobileApp())
+						.queryParam("_type", request.get_type())
+						.queryParam("mapX", request.getMapx())
+						.queryParam("mapY", request.getMapy())
+						.queryParam("radius", request.getRadius())
+						.queryParam("LDongRegnCd", request.getLDongRegnCd());
+
+					if (request.getLclsSystm1() != null) {
+						builder.queryParam("lclsSystm1", request.getLclsSystm1());
+					}
+
+					if (request.getContentTypeId() != null) {
+						builder.queryParam("contentTypeId", request.getContentTypeId());
+					}
+
+					return builder.build();
+				})
+				.retrieve()
+				.bodyToMono(TOUR_PLACE_TYPE)
+				.block();
+
+		} catch (Exception e) {
+			log.error("TourAPI 위치 기반 요청 실패 - path: {}", path, e);
 			return null;
 		}
 	}

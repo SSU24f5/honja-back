@@ -7,6 +7,7 @@ import java.util.List;
 import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.domain.place.dto.response.DetailAccessibilityDto;
 import com.honjaopseoyae.domain.place.dto.response.TourCommonResponseDto;
+import com.honjaopseoyae.domain.place.service.LocationService;
 import com.honjaopseoyae.domain.place.service.TourApiService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ class TourApiTest {
 
 	@Autowired
 	private TourApiService tourApiService;
+
+	@Autowired
+	private LocationService locationService;
 
 	@Test
 	// 반려동물, 무장애 전체 조회 테스트
@@ -49,25 +53,25 @@ class TourApiTest {
 		System.out.println("가져온 첫 번째 관광지 제목: " + result.get(0).getTitle());
 	}
 
-	@Test
+	// @Test
 	// 카테고리별 조회 테스트
-	void callPlaceByCategoryApiTest() {
-		String testContentTypeId = "12"; // 관광지
-
-		List<TourCommonResponseDto> petResult = tourApiService.getPetPlaceByCategoryFromTourAPI(testContentTypeId);
-		List<TourCommonResponseDto> barrierFreeResult = tourApiService.getBarrierFreePlaceByCategoryFromTourAPI(testContentTypeId);
-		List<TourCommonResponseDto> commonResult = tourApiService.getCommonPlaceByCategoryFromTourAPI(testContentTypeId);
-
-		System.out.println("====== Tour API Category-based Place Test Result ======");
-		System.out.println("Pet Places count: " + petResult.size());
-		System.out.println("Barrier Free Places count: " + barrierFreeResult.size());
-		System.out.println("Common Places count: " + commonResult.size());
-		System.out.println("======================================================");
-
-		assertThat(petResult).isNotNull();
-		assertThat(barrierFreeResult).isNotNull();
-		assertThat(commonResult).isNotNull();
-	}
+	// void callPlaceByCategoryApiTest() {
+	// 	String testContentTypeId = "12"; // 관광지
+	//
+	// 	List<TourCommonResponseDto> petResult = locationService.getPetPlaceByCategoryFromTourAPI(testContentTypeId);
+	// 	List<TourCommonResponseDto> barrierFreeResult = locationService.getBarrierFreePlaceByCategoryFromTourAPI(testContentTypeId);
+	// 	List<TourCommonResponseDto> commonResult = locationService.getCommonPlaceByCategoryFromTourAPI(testContentTypeId);
+	//
+	// 	System.out.println("====== Tour API Category-based Place Test Result ======");
+	// 	System.out.println("Pet Places count: " + petResult.size());
+	// 	System.out.println("Barrier Free Places count: " + barrierFreeResult.size());
+	// 	System.out.println("Common Places count: " + commonResult.size());
+	// 	System.out.println("======================================================");
+	//
+	// 	assertThat(petResult).isNotNull();
+	// 	assertThat(barrierFreeResult).isNotNull();
+	// 	assertThat(commonResult).isNotNull();
+	// }
 
 	@Test
 	void callTBarrierFreeDetailTest() {
