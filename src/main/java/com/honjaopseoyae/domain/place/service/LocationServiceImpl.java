@@ -72,6 +72,7 @@ public class LocationServiceImpl implements LocationService {
 			.mapx(dto.getMapx())
 			.mapy(dto.getMapy())
 			.radius("10000")
+			.contentTypeId(dto.getContentTypeId())
 			.numOfRows(400)
 			.build();
 	}
