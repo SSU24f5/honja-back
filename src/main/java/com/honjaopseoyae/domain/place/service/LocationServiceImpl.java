@@ -8,12 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.honjaopseoyae.domain.place.client.TourApiClient;
 import com.honjaopseoyae.domain.place.converter.TourPlaceConverter;
 import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
-import com.honjaopseoyae.domain.place.dto.request.AreaBaseTourRequestDto;
 import com.honjaopseoyae.domain.place.dto.request.LocationBasedRequestDto;
 import com.honjaopseoyae.domain.place.dto.request.UserLocationDto;
 import com.honjaopseoyae.domain.place.dto.response.TourCommonResponseDto;
 import com.honjaopseoyae.domain.place.dto.response.TourPlaceDto;
-import com.honjaopseoyae.domain.place.entity.TourContentType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
