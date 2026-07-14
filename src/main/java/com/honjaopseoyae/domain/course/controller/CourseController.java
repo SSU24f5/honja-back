@@ -4,12 +4,18 @@ import com.honjaopseoyae.domain.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseListResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.domain.course.service.CourseService;
+import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/courses")
@@ -17,6 +23,12 @@ import org.springframework.web.bind.annotation.*;
 public class CourseController {
 
     private final CourseService courseService;
+
+    @GetMapping
+    public ApiResponse<List<CourseListResponseDto>> getMyCourses(@AuthenticationPrincipal User user) {
+        List<CourseListResponseDto> response = courseService.getMyCourses(user.getId());
+        return ApiResponse.onSuccess(response);
+    }
 
     @GetMapping("/{courseId}")
     public ApiResponse<CourseDetailResponseDto> getCourseDetail(@PathVariable Long courseId) {
@@ -39,8 +51,8 @@ public class CourseController {
     @DeleteMapping("/{courseId}")
     public ApiResponse<String> deleteCourse(
             @PathVariable Long courseId,
-            @RequestParam Long userId) {
-        courseService.deleteCourse(courseId, userId);
+            @AuthenticationPrincipal User user) {
+        courseService.deleteCourse(courseId, user.getId());
         return ApiResponse.onSuccess("코스가 성공적으로 삭제되었습니다.");
     }
 }

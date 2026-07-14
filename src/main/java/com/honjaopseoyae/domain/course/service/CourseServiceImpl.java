@@ -6,6 +6,7 @@ import com.honjaopseoyae.domain.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseListResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
@@ -18,7 +19,7 @@ import com.honjaopseoyae.global.apipayload.exception.GeneralException;
 import com.honjaopseoyae.domain.place.entity.PlaceType;
 import com.honjaopseoyae.domain.place.repository.PlaceRepository;
 import com.honjaopseoyae.domain.place.service.TourApiService;
-import com.honjaopseoyae.domain.place.support.CourseFinder;
+import com.honjaopseoyae.domain.course.support.CourseFinder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,17 @@ public class CourseServiceImpl implements CourseService {
                 .toList();
 
         return CourseDetailResponseDto.of(course, dateItems);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CourseListResponseDto> getMyCourses(Long userId) {
+        userReader.getById(userId);
+
+        return courseRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
+            .stream()
+            .map(CourseListResponseDto::from)
+            .toList();
     }
 
     @Transactional

@@ -1,5 +1,7 @@
 package com.honjaopseoyae.domain.place.dto.response;
 
+import com.honjaopseoyae.domain.place.entity.Place;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -43,4 +45,40 @@ public class TourPlaceDto {
 	private String lclsSystm1;          // 지자체 시스템 코드 1
 	private String lclsSystm2;          // 지자체 시스템 코드 2
 	private String lclsSystm3;          // 지자체 시스템 코드 3
+
+	public Place toEntity(boolean isPetPlace, boolean isBarrierFree) {
+		return Place.builder()
+			.contentId(contentid)
+			.contentType(parseContentType(contenttypeid))
+			.mapx(parseDouble(mapx))
+			.mapy(parseDouble(mapy))
+			.image(firstimage)
+			.petPlace(isPetPlace)
+			.barrierFree(isBarrierFree)
+			.build();
+	}
+
+	private double parseDouble(String value) {
+		if (value == null || value.isBlank()) {
+			return 0.0;
+		}
+
+		try {
+			return Double.parseDouble(value.trim());
+		} catch (NumberFormatException e) {
+			return 0.0;
+		}
+	}
+
+	private Integer parseContentType(String value) {
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+
+		try {
+			return Integer.parseInt(value.trim());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
 }

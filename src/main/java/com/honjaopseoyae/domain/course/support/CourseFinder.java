@@ -1,4 +1,4 @@
-package com.honjaopseoyae.domain.place.support;
+package com.honjaopseoyae.domain.course.support;
 
 import org.springframework.stereotype.Component;
 

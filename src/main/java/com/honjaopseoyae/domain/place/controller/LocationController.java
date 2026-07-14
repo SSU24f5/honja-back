@@ -2,9 +2,11 @@ package com.honjaopseoyae.domain.place.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.honjaopseoyae.global.apipayload.ApiResponse;
@@ -32,5 +34,15 @@ public class LocationController {
 	public ApiResponse<List<TourCommonResponseDto>> getLocationBasedPetPlace(@RequestBody UserLocationDto dto) {
 		List<TourCommonResponseDto> response = locationService.getLocationBasedPetPlace(dto);
 		return ApiResponse.onSuccess(response);
+	}
+
+
+	@GetMapping("/common")
+	public ResponseEntity<List<TourCommonResponseDto>> getCommonPlaces(
+		@RequestBody UserLocationDto requestDto
+	) {
+		return ResponseEntity.ok(
+			locationService.getCommonPlaceByCategoryFromTourAPI(requestDto)
+		);
 	}
 }

@@ -16,5 +16,6 @@ import lombok.ToString;
 public class UserLocationDto {
 	private String mapx;
 	private String mapy;
+	private String contentTypeId;
 
 }
