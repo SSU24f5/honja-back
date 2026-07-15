@@ -25,5 +25,12 @@ public class UserReqDTO {
     ) {}
 
     public record EmailRequest(@NotBlank @Email String email) {}
+
+    public record UpdateProfileDTO(
+            String nickname,
+            String email,
+            String code
+    ){}
+
 }
 

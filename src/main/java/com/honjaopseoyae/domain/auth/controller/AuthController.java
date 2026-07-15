@@ -4,6 +4,7 @@ import com.honjaopseoyae.domain.auth.service.EmailAuthServiceImpl;
 import com.honjaopseoyae.domain.user.dto.req.UserReqDTO;
 import com.honjaopseoyae.domain.user.dto.res.UserResDTO;
 import com.honjaopseoyae.domain.user.service.UserService;
+import com.honjaopseoyae.global.apipayload.ApiResponse;
 import com.honjaopseoyae.global.security.PrincipalDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,18 +22,20 @@ public class AuthController {
 
 
     @PostMapping("/email/send")
-    public ResponseEntity<Void> sendCode(@RequestBody @Valid UserReqDTO.EmailRequest request) {
+    public ApiResponse<Void> sendCode(@RequestBody @Valid UserReqDTO.EmailRequest request) {
         emailAuthServiceImpl.sendCode(request.email());
-        return ResponseEntity.ok().build();
+        return ApiResponse.onSuccess(null);
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserResDTO.SignUpDTO> signUp(@RequestBody @Valid UserReqDTO.SignUpDTO dto) {
-        return ResponseEntity.ok(userService.signUp(dto));
+    public ApiResponse<UserResDTO.SignUpDTO> signUp(@RequestBody @Valid UserReqDTO.SignUpDTO dto) {
+        UserResDTO.SignUpDTO response = userService.signUp(dto);
+        return ApiResponse.onSuccess(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResDTO.LoginDTO> login(@RequestBody @Valid UserReqDTO.LoginDTO dto) {
-        return ResponseEntity.ok(userService.login(dto));
+    public ApiResponse<UserResDTO.LoginDTO> login(@RequestBody @Valid UserReqDTO.LoginDTO dto) {
+        UserResDTO.LoginDTO response = userService.login(dto);
+        return ApiResponse.onSuccess(response);
     }
 }

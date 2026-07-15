@@ -8,5 +8,10 @@ public interface UserService {
 
     @Transactional
     UserResDTO.SignUpDTO signUp(UserReqDTO.SignUpDTO dto);
+
+    @Transactional
     UserResDTO.LoginDTO login(UserReqDTO.LoginDTO dto);
+
+    @Transactional
+    UserResDTO.UpdateProfileDTO updateProfile(Long Id, UserReqDTO.UpdateProfileDTO request);
 }

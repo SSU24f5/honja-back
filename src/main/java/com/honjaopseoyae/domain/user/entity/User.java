@@ -53,4 +53,12 @@ public class User extends BaseEntity {
         this.seniorMode = seniorMode;
         this.petSize = petSize;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
 }

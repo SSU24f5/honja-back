@@ -7,6 +7,7 @@ import com.honjaopseoyae.domain.user.dto.res.UserResDTO;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.domain.user.repository.UserRepository;
 import com.honjaopseoyae.global.apipayload.domain.AuthErrorStatus;
+import com.honjaopseoyae.global.apipayload.domain.UserErrorStatus;
 import com.honjaopseoyae.global.apipayload.exception.GeneralException;
 import com.honjaopseoyae.global.utils.JWTUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class UserServiceImpl implements UserService {
     private final EmailAuthServiceImpl emailAuthServiceImpl;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserConverter userConverter;
     private final JWTUtil jwtUtil;
 
     @Override
@@ -38,10 +40,10 @@ public class UserServiceImpl implements UserService {
 
         String encodedPassword = passwordEncoder.encode(dto.password());
 
-        User user = UserConverter.toUser(dto, encodedPassword);
+        User user = userConverter.toUser(dto, encodedPassword);
         User savedUser = userRepository.save(user);
 
-        return UserConverter.toSignUpDTO(savedUser);
+        return userConverter.toSignUpDTO(savedUser);
     }
 
     @Override
@@ -61,5 +63,37 @@ public class UserServiceImpl implements UserService {
         );
 
         return new UserResDTO.LoginDTO(accessToken);
+    }
+
+    @Override
+    public UserResDTO.UpdateProfileDTO updateProfile(Long userId, UserReqDTO.UpdateProfileDTO request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(UserErrorStatus.USER_NOT_FOUND));
+
+        // 닉네임: 값 있으면 바로 반영, 검증 없음
+        if (request.nickname() != null && !request.nickname().isBlank()) {
+            user.updateNickname(request.nickname());
+        }
+
+        // 이메일: 값 있으면 인증코드 필수 + 검증 통과해야 반영
+        if (request.email() != null && !request.email().isBlank()) {
+
+            if (request.code() == null || request.code().isBlank()) {
+                throw new GeneralException(AuthErrorStatus.VERIFICATION_CODE_REQUIRED);
+            }
+
+            boolean verified = emailAuthServiceImpl.verifyCode(request.email(), request.code());
+            if (!verified) {
+                throw new GeneralException(AuthErrorStatus.INVALID_AUTH_CODE);
+            }
+
+            if (userRepository.existsByEmail(request.email())) {
+                throw new GeneralException(AuthErrorStatus.ALREADY_EXIST_EMAIL);
+            }
+
+            user.updateEmail(request.email());
+        }
+
+        return userConverter.toUpdateProfileDTO(user);
     }
 }

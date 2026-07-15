@@ -11,4 +11,9 @@ public class UserResDTO {
     public record LoginDTO(
             String accessToken
     ) {}
+
+    public record UpdateProfileDTO(
+            String nickname,
+            String email
+    ){}
 }
