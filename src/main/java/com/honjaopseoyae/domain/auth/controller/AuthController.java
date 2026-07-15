@@ -26,16 +26,4 @@ public class AuthController {
         emailAuthServiceImpl.sendCode(request.email());
         return ApiResponse.onSuccess(null);
     }
-
-    @PostMapping("/signup")
-    public ApiResponse<UserResDTO.SignUpDTO> signUp(@RequestBody @Valid UserReqDTO.SignUpDTO dto) {
-        UserResDTO.SignUpDTO response = userService.signUp(dto);
-        return ApiResponse.onSuccess(response);
-    }
-
-    @PostMapping("/login")
-    public ApiResponse<UserResDTO.LoginDTO> login(@RequestBody @Valid UserReqDTO.LoginDTO dto) {
-        UserResDTO.LoginDTO response = userService.login(dto);
-        return ApiResponse.onSuccess(response);
-    }
 }

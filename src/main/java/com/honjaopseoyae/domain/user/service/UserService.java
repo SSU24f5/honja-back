@@ -13,5 +13,8 @@ public interface UserService {
     UserResDTO.LoginDTO login(UserReqDTO.LoginDTO dto);
 
     @Transactional
-    UserResDTO.UpdateProfileDTO updateProfile(Long Id, UserReqDTO.UpdateProfileDTO request);
+    UserResDTO.UpdateProfileDTO updateProfile(Long userId, UserReqDTO.UpdateProfileDTO request);
+
+    @Transactional
+    void deleteUser(Long userId);
 }

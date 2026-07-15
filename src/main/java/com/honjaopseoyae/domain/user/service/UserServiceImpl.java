@@ -96,4 +96,16 @@ public class UserServiceImpl implements UserService {
 
         return userConverter.toUpdateProfileDTO(user);
     }
+
+    @Override
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(UserErrorStatus.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            throw new GeneralException(UserErrorStatus.ALREADY_DELETED_USER);
+        }
+
+        user.softDelete();
+    }
 }

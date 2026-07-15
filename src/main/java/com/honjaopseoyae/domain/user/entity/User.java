@@ -14,6 +14,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -41,6 +43,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PetSizeType petSize;          // 반려견 크기
 
+    @Column
+    private LocalDateTime deletedAt;      // 삭제 시간
+
+
     @Builder
     private User(String nickname, String email, String profile,
                  boolean petMode, boolean seniorMode, PetSizeType petSize, RoleType role, String password) {
@@ -60,5 +66,13 @@ public class User extends BaseEntity {
 
     public void updateEmail(String email) {
         this.email = email;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 }
