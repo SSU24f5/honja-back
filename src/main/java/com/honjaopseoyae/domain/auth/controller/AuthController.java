@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final EmailAuthServiceImpl emailAuthServiceImpl;
-    private final UserService userService;
 
 
     @PostMapping("/email/send")

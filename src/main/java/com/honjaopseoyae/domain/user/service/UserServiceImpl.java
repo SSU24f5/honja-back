@@ -1,10 +1,14 @@
 package com.honjaopseoyae.domain.user.service;
 
 import com.honjaopseoyae.domain.auth.service.EmailAuthServiceImpl;
+import com.honjaopseoyae.domain.term.entity.Term;
+import com.honjaopseoyae.domain.term.repository.TermRepository;
 import com.honjaopseoyae.domain.user.converter.UserConverter;
 import com.honjaopseoyae.domain.user.dto.req.UserReqDTO;
 import com.honjaopseoyae.domain.user.dto.res.UserResDTO;
 import com.honjaopseoyae.domain.user.entity.User;
+import com.honjaopseoyae.domain.user.entity.mapping.Agree;
+import com.honjaopseoyae.domain.user.repository.AgreeRepository;
 import com.honjaopseoyae.domain.user.repository.UserRepository;
 import com.honjaopseoyae.global.apipayload.domain.AuthErrorStatus;
 import com.honjaopseoyae.global.apipayload.domain.UserErrorStatus;
@@ -15,12 +19,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final EmailAuthServiceImpl emailAuthServiceImpl;
     private final UserRepository userRepository;
+    private final TermRepository termRepository;
+    private final AgreeRepository agreeRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserConverter userConverter;
     private final JWTUtil jwtUtil;
@@ -38,11 +46,14 @@ public class UserServiceImpl implements UserService {
             throw new GeneralException(AuthErrorStatus.ALREADY_EXIST_EMAIL);
         }
 
+        validateRequiredTerms(dto.agreedTermIds());
+
         String encodedPassword = passwordEncoder.encode(dto.password());
 
         User user = userConverter.toUser(dto, encodedPassword);
         User savedUser = userRepository.save(user);
 
+        saveAgreements(savedUser, dto.agreedTermIds());
         return userConverter.toSignUpDTO(savedUser);
     }
 
@@ -108,4 +119,32 @@ public class UserServiceImpl implements UserService {
 
         user.softDelete();
     }
+
+    private void validateRequiredTerms(List<Long> agreedTermIds) {
+        List<Term> requiredTerms = termRepository.findAll().stream()
+                .filter(Term::isAgreed)
+                .toList();
+
+        for (Term required : requiredTerms) {
+            if (!agreedTermIds.contains(required.getId())) {
+                throw new GeneralException(UserErrorStatus.REQUIRED_TERMS_NOT_AGREED);
+            }
+        }
+    }
+
+    private void saveAgreements(User user, List<Long> agreedTermIds) {
+        List<Agree> agreements = agreedTermIds.stream()
+                .map(termId -> {
+                    Term term = termRepository.findById(termId)
+                            .orElseThrow(() -> new GeneralException(UserErrorStatus.TERM_NOT_FOUND));
+                    return Agree.builder()
+                            .user(user)
+                            .term(term)
+                            .build();
+                })
+                .toList();
+
+        agreeRepository.saveAll(agreements);
+    }
+
 }
