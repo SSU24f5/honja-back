@@ -179,15 +179,16 @@ public class TourApiServiceImpl implements TourApiService {
 		double mapy = parseDouble(dto.getMapy());
 		String image = dto.getFirstimage();
 		Integer contentType = parseContentType(dto.getContenttypeid());
+		String cat3 = dto.getCat3();
 
 		boolean isPetPlace = place.isPetPlace();
 		boolean isBarrierFree = true;
 
-		if (!isPlaceChanged(place, mapx, mapy, image, contentType, isPetPlace, isBarrierFree)) {
+		if (!isPlaceChanged(place, mapx, mapy, image, contentType, cat3, isPetPlace, isBarrierFree)) {
 			return;
 		}
 
-		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType);
+		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType, cat3);
 		saveList.add(place);
 	}
 
@@ -197,6 +198,7 @@ public class TourApiServiceImpl implements TourApiService {
 		double mapy,
 		String image,
 		Integer contentType,
+		String cat3,
 		boolean isPetPlace,
 		boolean isBarrierFree
 	) {
@@ -204,6 +206,7 @@ public class TourApiServiceImpl implements TourApiService {
 			|| Double.compare(place.getMapy(), mapy) != 0
 			|| !Objects.equals(place.getImage(), image)
 			|| !Objects.equals(place.getContentType(), contentType)
+			|| !Objects.equals(place.getCat3(), cat3)
 			|| place.isPetPlace() != isPetPlace
 			|| place.isBarrierFree() != isBarrierFree;
 	}
