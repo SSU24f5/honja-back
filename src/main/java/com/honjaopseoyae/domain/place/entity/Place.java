@@ -19,9 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place extends BaseEntity {
 
-    private double mapx;                  // 위도 (kakao_x)
+    private double mapx;                  // 경도 (longitude, kakao x)
 
-    private double mapy;                  // 경도 (kakao_y)
+    private double mapy;                  // 위도 (latitude, kakao y)
 
     private String image;                 // 이미지 s3 url
 
@@ -56,5 +56,13 @@ public class Place extends BaseEntity {
         this.petPlace = petPlace;
         this.barrierFree = barrierFree;
         this.contentType = contentType;
+    }
+
+    public double getLat() {
+        return this.mapy;
+    }
+
+    public double getLng() {
+        return this.mapx;
     }
 }

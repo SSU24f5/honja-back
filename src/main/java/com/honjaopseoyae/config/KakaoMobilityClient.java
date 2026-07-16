@@ -57,4 +57,26 @@ public class KakaoMobilityClient {
 
 	public record RouteSummary(int distanceMeters, int durationSeconds) {
 	}
+
+	public KakaoDirectionsResponseDto getDirectionsWithPath(
+			double originX,
+			double originY,
+			double destinationX,
+			double destinationY,
+			String priority
+	) {
+		return kakaoMobilityWebClient.get()
+				.uri(uriBuilder -> uriBuilder
+						.path("/v1/directions")
+						.queryParam("origin", originX + "," + originY)
+						.queryParam("destination", destinationX + "," + destinationY)
+						.queryParam("priority", priority)
+						.queryParam("summary", false)
+						.queryParam("road_details", false)
+						.queryParam("alternatives", false)
+						.build())
+				.retrieve()
+				.bodyToMono(KakaoDirectionsResponseDto.class)
+				.block();
+	}
 }
