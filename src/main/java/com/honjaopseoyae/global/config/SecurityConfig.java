@@ -20,10 +20,14 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
 
     private final String[] allowUris = {
+            "/users/login",
+            "/users/signup",
             "/auth/**",
+            "/terms",
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
+            "/location/**"
     };
 
     @Bean

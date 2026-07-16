@@ -3,6 +3,8 @@ package com.honjaopseoyae.domain.user.dto.req;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public class UserReqDTO {
     public record SignUpDTO(
             @NotBlank
@@ -16,7 +18,9 @@ public class UserReqDTO {
             String nickname,
 
             @NotBlank
-            String password
+            String password,
+
+            List<Long> agreedTermIds
     ){}
 
     public record LoginDTO(
@@ -25,5 +29,12 @@ public class UserReqDTO {
     ) {}
 
     public record EmailRequest(@NotBlank @Email String email) {}
+
+    public record UpdateProfileDTO(
+            String nickname,
+            String email,
+            String code
+    ){}
+
 }
 

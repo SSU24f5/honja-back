@@ -38,14 +38,14 @@ public class PlaceController {
 		return ApiResponse.onSuccess(response);
 	}
 
-	// 무장애 전체 조회 api
+	// 무장애 전체 조회 api - 쓸 일 없을 듯
 	@GetMapping("/barrier-free")
 	public ApiResponse<List<TourCommonResponseDto>> getBarrierFreePlace() {
 		List<TourCommonResponseDto> response = tourApiService.getBarrierFreePlaceFromTourAPI();
 		return ApiResponse.onSuccess(response);
 	}
 
-	// 반려동물 전체 조회 api
+	// 반려동물 전체 조회 api - 쓸 일 없을 듯
 	@GetMapping("/pet-friendly")
 	public ApiResponse<List<TourCommonResponseDto>> getPetPlace() {
 		List<TourCommonResponseDto> response = tourApiService.getPetPlaceFromTourAPI();

@@ -24,7 +24,7 @@ public class Term extends BaseEntity {
     private String content;               // 내용
 
     @Column(name = "is_agreed")
-    private boolean isAgreed;             // 동의 여부(필수 여부)
+    private boolean isAgreed;             // 동의 여부(필수 동의항목 동의 여부)
 
     @Builder
     private Term(String title, String content, boolean isAgreed) {

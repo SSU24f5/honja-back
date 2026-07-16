@@ -13,9 +13,15 @@ spring:
       hibernate:
         format_sql: true
 
+tour-api:
+  service-key : 8c76935f70f8ef639516c49b2a3e5048959cd751d29233ee5c19b101e14e7310
+
+kakao:
+  base-url: https://apis-navi.kakaomobility.com
+  rest-api-key: 75ad8ef966f3cdd834c5282ecf2b9450
+
 jwt:
   token:
     secret: ${JWT_SECRET_KEY}
     expiration:
       access: 3600000
-

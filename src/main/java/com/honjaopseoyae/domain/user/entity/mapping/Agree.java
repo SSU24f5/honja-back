@@ -24,16 +24,16 @@ import lombok.NoArgsConstructor;
 public class Agree extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private User member;                  // 멤버 아이디
+    @JoinColumn(name = "user_id")
+    private User user;                  // 멤버 아이디
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "term_id")
     private Term term;                     // 약관 아이디
 
     @Builder
-    private Agree(User member, Term term) {
-        this.member = member;
+    private Agree(User user, Term term) {
+        this.user = user;
         this.term = term;
     }
 }
