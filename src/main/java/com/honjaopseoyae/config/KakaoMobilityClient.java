@@ -6,6 +6,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.honjaopseoyae.domain.course.dto.response.KakaoDirectionsResponseDto;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class KakaoMobilityClient {
 
