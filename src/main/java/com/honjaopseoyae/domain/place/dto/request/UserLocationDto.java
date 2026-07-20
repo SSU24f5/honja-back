@@ -14,8 +14,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class UserLocationDto {
-	private String mapx;
-	private String mapy;
+	private String mapx; // 경도
+	private String mapy; // 위도
 	private String contentTypeId;
 
 }
