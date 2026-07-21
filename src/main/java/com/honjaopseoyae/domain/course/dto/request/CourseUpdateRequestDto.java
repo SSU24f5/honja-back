@@ -51,6 +51,9 @@ public class CourseUpdateRequestDto {
 
 		private String title;
 		private String contentId;
+		private String contentTypeId;
+		private String cat3;
+		private String image;
 		private Boolean isPetPlace;
 		private Boolean isBarrierFree;
 		private String mapx;

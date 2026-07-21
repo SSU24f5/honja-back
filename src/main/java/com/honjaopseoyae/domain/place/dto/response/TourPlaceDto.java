@@ -64,6 +64,23 @@ public class TourPlaceDto {
 			.build();
 	}
 
+	public TourCommonResponseDto toCommonResponseDto() {
+		return TourCommonResponseDto.builder()
+			.contentid(contentid)
+			.contenttypeid(contenttypeid)
+			.title(title)
+			.tel(tel)
+			.addr1(addr1)
+			.addr2(addr2)
+			.mapx(mapx)
+			.mapy(mapy)
+			.mlevel(mlevel)
+			.firstimage(firstimage)
+			.firstimage2(firstimage2)
+			.cpyrhtDivCd(cpyrhtDivCd)
+			.build();
+	}
+
 	private double parseDouble(String value) {
 		if (value == null || value.isBlank()) {
 			return 0.0;

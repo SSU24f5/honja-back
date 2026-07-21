@@ -143,4 +143,46 @@ public class TourApiClient {
 			return null;
 		}
 	}
+
+	public TourApiCommonResponse<List<TourPlaceDto>> getKeywordPlaces(
+		String path,
+		com.honjaopseoyae.domain.place.dto.request.KeywordSearchTourRequestDto request
+	) {
+		try {
+			return tourApiWebClient.get()
+				.uri(uriBuilder -> {
+					var builder = uriBuilder
+						.path(path)
+						.queryParam("serviceKey", serviceKey)
+						.queryParam("keyword", request.getKeyword())
+						.queryParam("numOfRows", request.getNumOfRows())
+						.queryParam("pageNo", request.getPageNo())
+						.queryParam("MobileOS", request.getMobileOS())
+						.queryParam("MobileApp", request.getMobileApp())
+						.queryParam("_type", request.get_type());
+
+					if (request.getAreaCode() != null) {
+						builder.queryParam("areaCode", request.getAreaCode());
+					}
+					if (request.getArrange() != null) {
+						builder.queryParam("arrange", request.getArrange());
+					}
+					if (request.getSigunguCode() != null) {
+						builder.queryParam("sigunguCode", request.getSigunguCode());
+					}
+					if (request.getLclsSystm1() != null) {
+						builder.queryParam("lclsSystm1", request.getLclsSystm1());
+					}
+
+					return builder.build();
+				})
+				.retrieve()
+				.bodyToMono(TOUR_PLACE_TYPE)
+				.block();
+
+		} catch (Exception e) {
+			log.error("TourAPI 키워드 검색 요청 실패 - path: {}, keyword: {}", path, request.getKeyword(), e);
+			return null;
+		}
+	}
 }

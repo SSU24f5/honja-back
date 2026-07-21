@@ -256,4 +256,37 @@ public class TourApiServiceImpl implements TourApiService {
 			return null;
 		}
 	}
+
+	@Override
+	public List<TourCommonResponseDto> searchCommonPlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows) {
+		return fetchKeywordPlaces("/KorService2/searchKeyword2", keyword, pageNo, numOfRows);
+	}
+
+	@Override
+	public List<TourCommonResponseDto> searchBarrierFreePlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows) {
+		return fetchKeywordPlaces("/KorWithService2/searchKeyword2", keyword, pageNo, numOfRows);
+	}
+
+	@Override
+	public List<TourCommonResponseDto> searchPetPlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows) {
+		return fetchKeywordPlaces("/KorPetTourService2/searchKeyword2", keyword, pageNo, numOfRows);
+	}
+
+	private List<TourCommonResponseDto> fetchKeywordPlaces(String path, String keyword, Integer pageNo, Integer numOfRows) {
+		com.honjaopseoyae.domain.place.dto.request.KeywordSearchTourRequestDto requestDto =
+			com.honjaopseoyae.domain.place.dto.request.KeywordSearchTourRequestDto.builder()
+				.keyword(keyword)
+				.pageNo(pageNo != null ? pageNo : 1)
+				.numOfRows(numOfRows != null ? numOfRows : 10)
+				.areaCode("39")
+				.build();
+
+		TourApiCommonResponse<List<TourPlaceDto>> response = tourApiClient.getKeywordPlaces(path, requestDto);
+
+		List<TourPlaceDto> dtos = extractItems(response);
+		return dtos.stream()
+			.map(TourPlaceDto::toCommonResponseDto)
+			.limit(10)
+			.collect(Collectors.toList());
+	}
 }

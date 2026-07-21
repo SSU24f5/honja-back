@@ -76,22 +76,28 @@ public class CourseDetailResponseDto {
 		private double mapy;
 		private boolean petPlace;
 		private boolean barrierFree;
+		private String image;
+		private com.honjaopseoyae.domain.place.entity.PlaceType placeType;
+		private String cat3;
 
 		public static CoursePlaceItem from(CoursePlace coursePlace) {
 			Place place = coursePlace.getPlace();
 
 			return CoursePlaceItem.builder()
 				.coursePlaceId(coursePlace.getId())
-				.placeId(place.getId())
+				.placeId(place != null ? place.getId() : null)
 				.order(coursePlace.getSortOrder().intValue())
 				.orderType(coursePlace.getOrderType())
 				.distance(coursePlace.getDistance())
 				.timeTaken(coursePlace.getTimeTaken())
-				.contentId(place.getContentId())
-				.mapx(place.getMapx())
-				.mapy(place.getMapy())
-				.petPlace(place.isPetPlace())
-				.barrierFree(place.isBarrierFree())
+				.contentId(place != null ? place.getContentId() : null)
+				.mapx(place != null ? place.getMapx() : 0.0)
+				.mapy(place != null ? place.getMapy() : 0.0)
+				.petPlace(place != null && place.isPetPlace())
+				.barrierFree(place != null && place.isBarrierFree())
+				.image(place != null ? place.getImage() : null)
+				.placeType(place != null ? place.getPlaceType() : null)
+				.cat3(place != null ? place.getCat3() : null)
 				.build();
 		}
 	}
