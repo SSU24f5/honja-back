@@ -34,11 +34,13 @@ public class Place extends BaseEntity {
 
     private Integer contentType;         // 카테고리 코드
 
+    private String cat3;
+
     private PlaceType placeType;
 
     @Builder
     private Place(double mapx, double mapy, String image, boolean petPlace,
-                  boolean barrierFree, String contentId, Integer contentType,PlaceType placeType) {
+                  boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
@@ -46,15 +48,17 @@ public class Place extends BaseEntity {
         this.barrierFree = barrierFree;
         this.contentId = contentId;
         this.contentType = contentType;
+        this.cat3 = cat3;
         this.placeType = placeType;
     }
 
-    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType) {
+    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType, String cat3) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
         this.petPlace = petPlace;
         this.barrierFree = barrierFree;
         this.contentType = contentType;
+        this.cat3 = cat3;
     }
 }

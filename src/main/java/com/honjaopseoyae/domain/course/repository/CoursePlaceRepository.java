@@ -5,9 +5,11 @@ import org.springframework.stereotype.Repository;
 
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface CoursePlaceRepository extends JpaRepository<CoursePlace, Long> {
 	List<CoursePlace> findAllByCourseId(Long courseId);
+	List<CoursePlace> findByCourseIdAndDate(Long courseId, LocalDate date);
 }
