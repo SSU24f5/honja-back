@@ -16,6 +16,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
+import com.honjaopseoyae.domain.course.entity.enums.CourseRole;
+import com.honjaopseoyae.domain.course.entity.enums.InviteStatus;
+import com.honjaopseoyae.domain.course.entity.mapping.CourseMember;
+import com.honjaopseoyae.domain.course.repository.CourseMemberRepository;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
 import com.honjaopseoyae.domain.course.entity.enums.CourseType;
@@ -36,6 +40,9 @@ class CourseServiceTest {
 
 	@Autowired
 	private CourseRepository courseRepository;
+
+	@Autowired
+	private CourseMemberRepository courseMemberRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -64,7 +71,6 @@ class CourseServiceTest {
 
 		// 테스트용 코스 생성 및 저장
 		testCourse = Course.builder()
-				.user(testUser)
 				.name("테스트 코스")
 				.description("테스트 설명")
 				.isPublic(true)
@@ -73,6 +79,14 @@ class CourseServiceTest {
 				.courseType(CourseType.GENERAL)
 				.build();
 		courseRepository.save(testCourse);
+
+		CourseMember owner = CourseMember.builder()
+				.course(testCourse)
+				.user(testUser)
+				.role(com.honjaopseoyae.domain.course.entity.enums.CourseRole.OWNER)
+				.status(com.honjaopseoyae.domain.course.entity.enums.InviteStatus.ACCEPTED)
+				.build();
+		courseMemberRepository.save(owner);
 
 		// 서울시청 부근 장소 1
 		place1 = Place.builder()

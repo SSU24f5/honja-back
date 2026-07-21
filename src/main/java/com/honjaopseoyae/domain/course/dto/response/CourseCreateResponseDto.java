@@ -15,12 +15,9 @@ import java.time.LocalDateTime;
 public class CourseCreateResponseDto {
 
     private Long id;
-    private Long userId;
-    private String userNickname;
     private String name;
     private String description;
     private boolean isPublic;
-    private boolean isExternal;
     private LocalDate startDate;
     private LocalDate endDate;
     private CourseType courseType;
@@ -30,12 +27,9 @@ public class CourseCreateResponseDto {
     public static CourseCreateResponseDto from(Course course) {
         return CourseCreateResponseDto.builder()
                 .id(course.getId())
-                .userId(course.getUser() != null ? course.getUser().getId() : null)
-                .userNickname(course.getUser() != null ? course.getUser().getNickname() : null)
                 .name(course.getName())
                 .description(course.getDescription())
                 .isPublic(course.isPublic())
-                .isExternal(course.isExternal())
                 .startDate(course.getStartDate())
                 .endDate(course.getEndDate())
                 .courseType(course.getCourseType())

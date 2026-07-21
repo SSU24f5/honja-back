@@ -98,7 +98,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseCreateResponseDto createCourse(CourseCreateRequestDto requestDto, Long userId) {
         User user = userReader.getById(userId);
-        Course course = CourseCreateRequestDto.toEntity(requestDto, user);
+        Course course = CourseCreateRequestDto.toEntity(requestDto);
         Course savedCourse = courseRepository.save(course);
 
         CourseMember owner = CourseMember.builder()
@@ -348,9 +348,14 @@ public class CourseServiceImpl implements CourseService {
     public void deleteCourse(Long courseId, Long userId) {
         Course course = courseFinder.findById(courseId);
 
-        if (course.getUser() == null || !course.getUser().getId().equals(userId)) {
-            throw new GeneralException(CourseErrorStatus.COURSE_NOT_WRITER);
-        }
+        courseMemberRepository.findByCourseIdAndUserIdAndRoleAndStatus(
+                courseId,
+                userId,
+                CourseRole.OWNER,
+                InviteStatus.ACCEPTED
+            )
+            .orElseThrow(() ->
+                new GeneralException(CourseErrorStatus.COURSE_NOT_WRITER));
 
         courseRepository.delete(course);
     }

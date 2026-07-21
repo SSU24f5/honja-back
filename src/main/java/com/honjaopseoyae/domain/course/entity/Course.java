@@ -35,10 +35,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Course extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;                    // 작성자
-
     private String name;                  // 이름
 
     private String description;           // 설명
@@ -60,11 +56,10 @@ public class Course extends BaseEntity {
 
 
     @Builder
-    private Course(User user, String name, String description,
+    private Course(String name, String description,
                    boolean isPublic,
                    LocalDate startDate, LocalDate endDate,
                    CourseType courseType, TripCategory tripCategory) {
-        this.user = user;
         this.name = name;
         this.description = description;
         this.isPublic = isPublic;

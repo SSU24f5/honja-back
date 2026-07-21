@@ -41,9 +41,8 @@ public class CourseCreateRequestDto {
     private TripCategory tripCategory;
 
 
-    public static Course toEntity(CourseCreateRequestDto requestDto, User user) {
+    public static Course toEntity(CourseCreateRequestDto requestDto) {
         return Course.builder()
-                .user(user)
                 .name(requestDto.getName())
                 .description(requestDto.getDescription())
                 .isPublic(requestDto.getIsPublic())

@@ -20,7 +20,6 @@ public class CourseDetailResponseDto {
 	private String name;
 	private String description;
 	private boolean isPublic;
-	private boolean isExternal;
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private CourseType courseType;
@@ -36,7 +35,6 @@ public class CourseDetailResponseDto {
 			.name(course.getName())
 			.description(course.getDescription())
 			.isPublic(course.isPublic())
-			.isExternal(course.isExternal())
 			.startDate(course.getStartDate())
 			.endDate(course.getEndDate())
 			.courseType(course.getCourseType())

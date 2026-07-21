@@ -9,6 +9,8 @@ import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.domain.course.service.CourseService;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
+import com.honjaopseoyae.global.security.PrincipalDetails;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -25,27 +27,27 @@ public class CourseController {
     private final CourseService courseService;
 
     @GetMapping
-    public ApiResponse<List<CourseListResponseDto>> getMyCourses(@AuthenticationPrincipal User user) {
-        List<CourseListResponseDto> response = courseService.getMyCourses(user.getId());
+    public ApiResponse<List<CourseListResponseDto>> getMyCourses(@AuthenticationPrincipal PrincipalDetails pd) {
+        List<CourseListResponseDto> response = courseService.getMyCourses(pd.getUserId());
         return ApiResponse.onSuccess(response);
     }
 
     @GetMapping("/{courseId}")
-    public ApiResponse<CourseDetailResponseDto> getCourseDetail(@PathVariable Long courseId, @AuthenticationPrincipal User user) {
-        CourseDetailResponseDto response = courseService.getCourseDetail(courseId, user.getId());
+    public ApiResponse<CourseDetailResponseDto> getCourseDetail(@PathVariable Long courseId, @AuthenticationPrincipal PrincipalDetails pd) {
+        CourseDetailResponseDto response = courseService.getCourseDetail(courseId, pd.getUserId());
         return ApiResponse.onSuccess(response);
     }
 
     @PostMapping
-    public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto, @AuthenticationPrincipal User user) {
+    public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto, @AuthenticationPrincipal PrincipalDetails pd) {
 
-        CourseCreateResponseDto response = courseService.createCourse(requestDto, user.getId());
+        CourseCreateResponseDto response = courseService.createCourse(requestDto, pd.getUserId());
         return ApiResponse.onSuccess(response);
     }
 
     @PutMapping
-    public ApiResponse<CourseUpdateResponseDto> updateCourse(@RequestBody @Valid CourseUpdateRequestDto requestDto, @AuthenticationPrincipal User user) {
-        CourseUpdateResponseDto response = courseService.updateCourse(requestDto, user.getId());
+    public ApiResponse<CourseUpdateResponseDto> updateCourse(@RequestBody @Valid CourseUpdateRequestDto requestDto, @AuthenticationPrincipal PrincipalDetails pd) {
+        CourseUpdateResponseDto response = courseService.updateCourse(requestDto, pd.getUserId());
         return ApiResponse.onSuccess(response);
     }
 
