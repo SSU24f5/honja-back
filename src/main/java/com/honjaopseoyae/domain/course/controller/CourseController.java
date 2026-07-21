@@ -58,4 +58,35 @@ public class CourseController {
         courseService.deleteCourse(courseId, pd.getUserId());
         return ApiResponse.onSuccess("코스가 성공적으로 삭제되었습니다.");
     }
+
+    @PostMapping("/invitations")
+    public ApiResponse<String> inviteMember(
+            @RequestBody @Valid com.honjaopseoyae.domain.course.dto.request.CourseInviteRequestDto requestDto,
+            @AuthenticationPrincipal PrincipalDetails pd) {
+        courseService.inviteMemberByEmail(requestDto, pd.getUserId());
+        return ApiResponse.onSuccess("초대 요청이 성공적으로 발송되었습니다.");
+    }
+
+    @GetMapping("/invitations")
+    public ApiResponse<List<com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto>> getMyInvitations(
+            @AuthenticationPrincipal PrincipalDetails pd) {
+        List<com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto> response = courseService.getMyInvitations(pd.getUserId());
+        return ApiResponse.onSuccess(response);
+    }
+
+    @PostMapping("/invitations/{courseMemberId}/accept")
+    public ApiResponse<String> acceptInvitation(
+            @PathVariable Long courseMemberId,
+            @AuthenticationPrincipal PrincipalDetails pd) {
+        courseService.acceptInvitation(courseMemberId, pd.getUserId());
+        return ApiResponse.onSuccess("초대를 성공적으로 수락했습니다.");
+    }
+
+    @PostMapping("/invitations/{courseMemberId}/reject")
+    public ApiResponse<String> rejectInvitation(
+            @PathVariable Long courseMemberId,
+            @AuthenticationPrincipal PrincipalDetails pd) {
+        courseService.rejectInvitation(courseMemberId, pd.getUserId());
+        return ApiResponse.onSuccess("초대를 거절했습니다.");
+    }
 }

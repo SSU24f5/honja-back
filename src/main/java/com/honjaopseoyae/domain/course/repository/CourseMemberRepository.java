@@ -18,5 +18,7 @@ public interface CourseMemberRepository extends JpaRepository<CourseMember, Long
 		InviteStatus status
 	);
 
+	Optional<CourseMember> findByCourseIdAndUserId(Long courseId, Long userId);
+
 	Optional<CourseMember> findByCourseIdAndUserIdAndRoleAndStatus(Long courseId, Long userId, CourseRole role, InviteStatus status);
 }

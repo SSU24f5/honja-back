@@ -25,7 +25,7 @@ import com.honjaopseoyae.domain.place.entity.PlaceType;
 import com.honjaopseoyae.domain.place.repository.PlaceRepository;
 import com.honjaopseoyae.domain.place.service.TourApiService;
 import com.honjaopseoyae.domain.course.support.CourseFinder;
-
+import java.util.TreeMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +37,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.TreeMap;
+import com.honjaopseoyae.domain.course.dto.request.CourseInviteRequestDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto;
+import com.honjaopseoyae.domain.user.repository.UserRepository;
+import com.honjaopseoyae.global.apipayload.domain.UserErrorStatus;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +56,7 @@ public class CourseServiceImpl implements CourseService {
     private final TourApiService tourApiService;
     private final KakaoMobilityClient kakaoMobilityClient;
     private final KakaoLocalClient kakaoLocalClient;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -401,11 +406,103 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
+    private Integer parseContentType(String contentTypeId) {
+        if (contentTypeId == null || contentTypeId.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(contentTypeId.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     private String toKilometers(int distanceMeters) {
         return String.format(Locale.US, "%.1f", distanceMeters / 1000.0);
     }
 
     private String toMinutes(int durationSeconds) {
         return String.valueOf((int) Math.ceil(durationSeconds / 60.0));
+    }
+
+    @Override
+    public void inviteMemberByEmail(CourseInviteRequestDto requestDto, Long currentUserId) {
+        Course course = courseFinder.findById(requestDto.getCourseId());
+
+        courseMemberRepository.findByCourseIdAndUserIdAndStatus(course.getId(), currentUserId, InviteStatus.ACCEPTED)
+            .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED));
+
+        User targetUser = userRepository.findByEmail(requestDto.getEmail())
+            .orElseThrow(() -> new GeneralException(UserErrorStatus.USER_NOT_FOUND));
+
+        if (targetUser.getId().equals(currentUserId)) {
+            throw new GeneralException(CourseErrorStatus.CANNOT_INVITE_SELF);
+        }
+
+        courseMemberRepository.findByCourseIdAndUserId(course.getId(), targetUser.getId())
+            .ifPresent(cm -> {
+                throw new GeneralException(CourseErrorStatus.ALREADY_INVITED_OR_MEMBER);
+            });
+
+        CourseMember invitation = CourseMember.builder()
+            .course(course)
+            .user(targetUser)
+            .role(CourseRole.MEMBER)
+            .status(InviteStatus.PENDING)
+            .build();
+
+        courseMemberRepository.save(invitation);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CourseInvitationResponseDto> getMyInvitations(Long currentUserId) {
+        List<CourseMember> pendingMemberships = courseMemberRepository.findAllByUserIdAndStatus(currentUserId, InviteStatus.PENDING);
+
+        return pendingMemberships.stream()
+            .map(member -> {
+                CourseMember owner = member.getCourse().getMembers().stream()
+                    .filter(m -> m.getRole() == CourseRole.OWNER)
+                    .findFirst()
+                    .orElse(null);
+
+                String inviterName = (owner != null && owner.getUser() != null) ? owner.getUser().getNickname() : null;
+                String inviterEmail = (owner != null && owner.getUser() != null) ? owner.getUser().getEmail() : null;
+
+                return CourseInvitationResponseDto.from(member, inviterName, inviterEmail);
+            })
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public void acceptInvitation(Long courseMemberId, Long currentUserId) {
+        CourseMember courseMember = courseMemberRepository.findById(courseMemberId)
+            .orElseThrow(() -> new GeneralException(CourseErrorStatus.INVITATION_NOT_FOUND));
+
+        if (!courseMember.getUser().getId().equals(currentUserId)) {
+            throw new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED);
+        }
+
+        if (courseMember.getStatus() != InviteStatus.PENDING) {
+            throw new GeneralException(CourseErrorStatus.INVALID_INVITATION_STATUS);
+        }
+
+        courseMember.accept();
+    }
+
+    @Override
+    public void rejectInvitation(Long courseMemberId, Long currentUserId) {
+        CourseMember courseMember = courseMemberRepository.findById(courseMemberId)
+            .orElseThrow(() -> new GeneralException(CourseErrorStatus.INVITATION_NOT_FOUND));
+
+        if (!courseMember.getUser().getId().equals(currentUserId)) {
+            throw new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED);
+        }
+
+        if (courseMember.getStatus() != InviteStatus.PENDING) {
+            throw new GeneralException(CourseErrorStatus.INVALID_INVITATION_STATUS);
+        }
+
+        courseMember.reject();
     }
 }
