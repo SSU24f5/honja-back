@@ -3,7 +3,8 @@ package com.honjaopseoyae.domain.course.dto.request;
 import java.time.LocalDate;
 
 import com.honjaopseoyae.domain.course.entity.Course;
-import com.honjaopseoyae.domain.course.entity.CourseType;
+import com.honjaopseoyae.domain.course.entity.enums.CourseType;
+import com.honjaopseoyae.domain.course.entity.enums.TripCategory;
 import com.honjaopseoyae.domain.user.entity.User;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,10 +20,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class CourseCreateRequestDto {
-
-    @NotNull(message = "작성자 ID는 필수 입력값입니다.")
-    private Long userId;
-
     @NotBlank(message = "코스 이름은 필수 입력값입니다.")
     private String name;
 
@@ -30,9 +27,6 @@ public class CourseCreateRequestDto {
 
     @NotNull(message = "공개 여부는 필수 입력값입니다.")
     private Boolean isPublic;
-
-    @NotNull(message = "야외 여부는 필수 입력값입니다.")
-    private Boolean isExternal;
 
     @NotNull
     private LocalDate startDate;
@@ -43,16 +37,20 @@ public class CourseCreateRequestDto {
     @NotNull
     private CourseType courseType;
 
+    @NotNull
+    private TripCategory tripCategory;
+
+
     public static Course toEntity(CourseCreateRequestDto requestDto, User user) {
         return Course.builder()
                 .user(user)
                 .name(requestDto.getName())
                 .description(requestDto.getDescription())
                 .isPublic(requestDto.getIsPublic())
-                .isExternal(requestDto.getIsExternal())
                 .startDate(requestDto.getStartDate())
                 .endDate(requestDto.getEndDate())
                 .courseType(requestDto.getCourseType())
+                .tripCategory(requestDto.getTripCategory())
                 .build();
     }
 }

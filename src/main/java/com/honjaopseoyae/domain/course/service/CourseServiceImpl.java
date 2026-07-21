@@ -8,6 +8,10 @@ import com.honjaopseoyae.domain.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseListResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
+import com.honjaopseoyae.domain.course.entity.enums.CourseRole;
+import com.honjaopseoyae.domain.course.entity.enums.InviteStatus;
+import com.honjaopseoyae.domain.course.entity.mapping.CourseMember;
+import com.honjaopseoyae.domain.course.repository.CourseMemberRepository;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
 import com.honjaopseoyae.domain.course.entity.Course;
@@ -40,6 +44,7 @@ import java.util.TreeMap;
 public class CourseServiceImpl implements CourseService {
     private final CourseFinder courseFinder;
     private final CourseRepository courseRepository;
+    private final CourseMemberRepository courseMemberRepository;
     private final UserReader userReader;
     private final CoursePlaceRepository coursePlaceRepository;
     private final PlaceRepository placeRepository;
@@ -48,7 +53,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Transactional(readOnly = true)
     @Override
-    public CourseDetailResponseDto getCourseDetail(Long courseId) {
+    public CourseDetailResponseDto getCourseDetail(Long courseId, Long userId) {
         Course course = courseFinder.findById(courseId);
 
         List<CoursePlace> coursePlaces =
@@ -81,26 +86,40 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseListResponseDto> getMyCourses(Long userId) {
         userReader.getById(userId);
 
-        return courseRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
+        return courseMemberRepository.findAllByUserIdAndStatus(userId, InviteStatus.ACCEPTED)
             .stream()
+            .map(CourseMember::getCourse)
+            .sorted(Comparator.comparing(Course::getCreatedAt).reversed())
             .map(CourseListResponseDto::from)
             .toList();
     }
 
     @Transactional
     @Override
-    public CourseCreateResponseDto createCourse(CourseCreateRequestDto requestDto) {
-        User user = userReader.getById(requestDto.getUserId());
+    public CourseCreateResponseDto createCourse(CourseCreateRequestDto requestDto, Long userId) {
+        User user = userReader.getById(userId);
         Course course = CourseCreateRequestDto.toEntity(requestDto, user);
         Course savedCourse = courseRepository.save(course);
+
+        CourseMember owner = CourseMember.builder()
+            .course(savedCourse)
+            .user(user)
+            .role(CourseRole.OWNER)
+            .status(InviteStatus.ACCEPTED)
+            .build();
+
+        courseMemberRepository.save(owner);
 
         return CourseCreateResponseDto.from(savedCourse);
     }
 
     @Transactional
     @Override
-    public CourseUpdateResponseDto updateCourse(CourseUpdateRequestDto requestDto) {
+    public CourseUpdateResponseDto updateCourse(CourseUpdateRequestDto requestDto, Long userId) {
         Course course = courseFinder.findById(requestDto.getCourseId());
+
+        courseMemberRepository.findByCourseIdAndUserIdAndStatus(course.getId(), userId, InviteStatus.ACCEPTED)
+            .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_NOT_WRITER));
 
         List<CoursePlace> existingCoursePlaces =
             coursePlaceRepository.findAllByCourseId(course.getId());

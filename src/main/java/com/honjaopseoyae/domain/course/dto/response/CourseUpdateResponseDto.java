@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.honjaopseoyae.domain.course.entity.Course;
-import com.honjaopseoyae.domain.course.entity.OrderType;
+import com.honjaopseoyae.domain.course.entity.enums.OrderType;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
 
 @Getter

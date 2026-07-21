@@ -1,6 +1,6 @@
 package com.honjaopseoyae.domain.course.algorithm;
 
-import com.honjaopseoyae.domain.course.entity.OrderType;
+import com.honjaopseoyae.domain.course.entity.enums.OrderType;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
 import org.springframework.stereotype.Component;
 

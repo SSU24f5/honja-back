@@ -18,7 +18,7 @@ import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
-import com.honjaopseoyae.domain.course.entity.CourseType;
+import com.honjaopseoyae.domain.course.entity.enums.CourseType;
 import com.honjaopseoyae.domain.course.entity.Course;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
 import com.honjaopseoyae.domain.course.service.CourseService;
@@ -68,7 +68,6 @@ class CourseServiceTest {
 				.name("테스트 코스")
 				.description("테스트 설명")
 				.isPublic(true)
-				.isExternal(true)
 				.startDate(LocalDate.now())
 				.endDate(LocalDate.now().plusDays(1))
 				.courseType(CourseType.GENERAL)
@@ -107,6 +106,8 @@ class CourseServiceTest {
 				.build();
 		coursePlaceRepository.save(existingCoursePlace);
 
+		User user = testUser;
+
 		// DTO 설정
 		CourseUpdateRequestDto requestDto = new CourseUpdateRequestDto();
 		ReflectionTestUtils.setField(requestDto, "courseId", testCourse.getId());
@@ -132,7 +133,7 @@ class CourseServiceTest {
 		ReflectionTestUtils.setField(requestDto, "dates", List.of(dateItem));
 
 		// When
-		CourseUpdateResponseDto response = courseService.updateCourse(requestDto);
+		CourseUpdateResponseDto response = courseService.updateCourse(requestDto, testUser.getId());
 
 		// Then
 		assertThat(response).isNotNull();
@@ -187,7 +188,7 @@ class CourseServiceTest {
 		coursePlaceRepository.save(cp2);
 
 		// When
-		CourseDetailResponseDto detail = courseService.getCourseDetail(testCourse.getId());
+		CourseDetailResponseDto detail = courseService.getCourseDetail(testCourse.getId(), testUser.getId());
 
 		//Then
 	}

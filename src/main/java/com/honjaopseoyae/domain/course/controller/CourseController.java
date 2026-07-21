@@ -31,20 +31,21 @@ public class CourseController {
     }
 
     @GetMapping("/{courseId}")
-    public ApiResponse<CourseDetailResponseDto> getCourseDetail(@PathVariable Long courseId) {
-        CourseDetailResponseDto response = courseService.getCourseDetail(courseId);
+    public ApiResponse<CourseDetailResponseDto> getCourseDetail(@PathVariable Long courseId, @AuthenticationPrincipal User user) {
+        CourseDetailResponseDto response = courseService.getCourseDetail(courseId, user.getId());
         return ApiResponse.onSuccess(response);
     }
 
     @PostMapping
-    public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto) {
-        CourseCreateResponseDto response = courseService.createCourse(requestDto);
+    public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto, @AuthenticationPrincipal User user) {
+
+        CourseCreateResponseDto response = courseService.createCourse(requestDto, user.getId());
         return ApiResponse.onSuccess(response);
     }
 
     @PutMapping
-    public ApiResponse<CourseUpdateResponseDto> updateCourse(@RequestBody @Valid CourseUpdateRequestDto requestDto) {
-        CourseUpdateResponseDto response = courseService.updateCourse(requestDto);
+    public ApiResponse<CourseUpdateResponseDto> updateCourse(@RequestBody @Valid CourseUpdateRequestDto requestDto, @AuthenticationPrincipal User user) {
+        CourseUpdateResponseDto response = courseService.updateCourse(requestDto, user.getId());
         return ApiResponse.onSuccess(response);
     }
 

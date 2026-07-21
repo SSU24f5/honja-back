@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.honjaopseoyae.domain.course.entity.Course;
-import com.honjaopseoyae.domain.course.entity.CourseType;
+import com.honjaopseoyae.domain.course.entity.enums.CourseType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

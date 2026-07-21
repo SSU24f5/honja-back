@@ -1,6 +1,7 @@
 package com.honjaopseoyae.domain.user.entity;
 
 
+import com.honjaopseoyae.domain.course.entity.mapping.CourseMember;
 import com.honjaopseoyae.global.common.PetSizeType;
 import com.honjaopseoyae.global.common.RoleType;
 import com.honjaopseoyae.global.entity.BaseEntity;
@@ -8,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -46,6 +50,8 @@ public class User extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;      // 삭제 시간
 
+    @OneToMany(mappedBy = "user")
+    private List<CourseMember> courseMembers = new ArrayList<>();
 
     @Builder
     private User(String nickname, String email, String profile,
