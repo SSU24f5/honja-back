@@ -42,7 +42,9 @@ public class KakaoMobilityClient {
 			.bodyToMono(KakaoDirectionsResponseDto.class)
 			.timeout(TIMEOUT)
 			.map(this::extractSummary)
-			.onErrorResume(e -> Mono.empty());
+			.onErrorResume(e -> { e.printStackTrace();
+				return Mono.empty();
+			});
 	}
 
 	/** 단건 동기 호출이 필요한 다른 곳에서 쓰던 기존 메서드는 유지 */
@@ -52,9 +54,24 @@ public class KakaoMobilityClient {
 		double destinationX,
 		double destinationY
 	) {
-		return getRouteSummaryAsync(originX, originY, destinationX, destinationY)
-			.blockOptional(TIMEOUT)
-			.orElse(null);
+		// return getRouteSummaryAsync(originX, originY, destinationX, destinationY)
+		// 	.blockOptional(TIMEOUT)
+		// 	.orElse(null);
+
+		String response = kakaoMobilityWebClient.get()
+			.uri(uriBuilder -> uriBuilder
+				.path("/v1/directions")
+				.queryParam("origin", originX + "," + originY)
+				.queryParam("destination", destinationX + "," + destinationY)
+				.queryParam("summary", true)
+				.build())
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
+
+		System.out.println(response);
+
+		return null;
 	}
 
 	private RouteSummary extractSummary(KakaoDirectionsResponseDto response) {

@@ -1,5 +1,6 @@
 package com.honjaopseoyae.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,18 @@ public class WebClientConfig {
 		return WebClient.builder()
 			.baseUrl(baseUrl)
 			.defaultHeader(HttpHeaders.AUTHORIZATION, "KakaoAK " + restApiKey)
+			.build();
+	}
+
+	@Bean
+	@Qualifier("kakaoLocalWebClient")
+	public WebClient kakaoLocalWebClient(
+		@Value("${kakao.local.base-url}") String baseUrl,
+		@Value("${kakao.rest-api-key}") String apiKey
+	) {
+		return WebClient.builder()
+			.baseUrl(baseUrl)
+			.defaultHeader(HttpHeaders.AUTHORIZATION, "KakaoAK " + apiKey)
 			.build();
 	}
 }
