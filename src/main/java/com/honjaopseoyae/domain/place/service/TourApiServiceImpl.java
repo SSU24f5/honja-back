@@ -11,6 +11,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.honjaopseoyae.config.KakaoLocalClient;
 import com.honjaopseoyae.domain.place.client.TourApiClient;
 import com.honjaopseoyae.domain.place.converter.TourPlaceConverter;
 import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
@@ -39,6 +40,7 @@ public class TourApiServiceImpl implements TourApiService {
 
 	private final TourApiClient tourApiClient;
 	private final PlaceRepository placeRepository;
+	private final KakaoLocalClient kakaoLocalClient;
 
 	@Override
 	public TourApiCommonResponse<List<DetailAccessibilityDto>> getBarrierFreeInfo(Long contentId) {
@@ -138,7 +140,9 @@ public class TourApiServiceImpl implements TourApiService {
 			Place localPlace = localPlaceMap.get(dto.getContentid());
 
 			if (localPlace == null) {
-				saveList.add(dto.toEntity(false, true));
+				Place newPlace = dto.toEntity(false, true);
+				refineCoordinatesWithKakaoLocal(newPlace, dto.getTitle());
+				saveList.add(newPlace);
 				continue;
 			}
 
@@ -152,6 +156,16 @@ public class TourApiServiceImpl implements TourApiService {
 
 		placeRepository.saveAll(saveList);
 		log.info("로컬 DB 동기화 완료! 추가/수정된 데이터 수: {}개", saveList.size());
+	}
+
+	private void refineCoordinatesWithKakaoLocal(Place place, String title) {
+		if (title == null || title.isBlank() || kakaoLocalClient == null) {
+			return;
+		}
+		KakaoLocalClient.RoadCoordinate roadCoord = kakaoLocalClient.searchKeyword(title);
+		if (roadCoord != null) {
+			place.updateCoordinates(roadCoord.x(), roadCoord.y());
+		}
 	}
 
 	private List<TourCommonResponseDto> fetchPlaces(String path, AreaBaseTourRequestDto requestDto) {
@@ -189,6 +203,7 @@ public class TourApiServiceImpl implements TourApiService {
 		}
 
 		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType, cat3);
+		refineCoordinatesWithKakaoLocal(place, dto.getTitle());
 		saveList.add(place);
 	}
 
@@ -202,8 +217,8 @@ public class TourApiServiceImpl implements TourApiService {
 		boolean isPetPlace,
 		boolean isBarrierFree
 	) {
-		return Double.compare(place.getMapx(), mapx) != 0
-			|| Double.compare(place.getMapy(), mapy) != 0
+		return Double.compare(place.getTourMapx(), mapx) != 0
+			|| Double.compare(place.getTourMapy(), mapy) != 0
 			|| !Objects.equals(place.getImage(), image)
 			|| !Objects.equals(place.getContentType(), contentType)
 			|| !Objects.equals(place.getCat3(), cat3)
@@ -217,8 +232,6 @@ public class TourApiServiceImpl implements TourApiService {
 			.mobileApp("HonjaOpseoYae")
 			.build();
 	}
-
-
 
 	private double parseDouble(String value) {
 		if (value == null || value.isBlank()) {

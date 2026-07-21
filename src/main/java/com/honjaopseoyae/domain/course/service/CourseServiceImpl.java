@@ -1,6 +1,7 @@
 package com.honjaopseoyae.domain.course.service;
 
 import com.honjaopseoyae.common.UserReader;
+import com.honjaopseoyae.config.KakaoLocalClient;
 import com.honjaopseoyae.config.KakaoMobilityClient;
 import com.honjaopseoyae.domain.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
@@ -50,6 +51,7 @@ public class CourseServiceImpl implements CourseService {
     private final PlaceRepository placeRepository;
     private final TourApiService tourApiService;
     private final KakaoMobilityClient kakaoMobilityClient;
+    private final KakaoLocalClient kakaoLocalClient;
 
     @Transactional(readOnly = true)
     @Override
@@ -275,15 +277,21 @@ public class CourseServiceImpl implements CourseService {
     private Place createIndividualPlace(
         CourseUpdateRequestDto.CoursePlaceItem item
     ) {
-        return placeRepository.save(
-            Place.builder()
-                .mapx(parseDouble(item.getMapx()))
-                .mapy(parseDouble(item.getMapy()))
-                .placeType(PlaceType.INDIVIDUAL_PLACE)
-                .petPlace(false)
-                .barrierFree(false)
-                .build()
-        );
+        double rawMapx = parseDouble(item.getMapx());
+        double rawMapy = parseDouble(item.getMapy());
+
+        return placeRepository.findByMapxAndMapyAndPlaceType(rawMapx, rawMapy, PlaceType.INDIVIDUAL_PLACE)
+            .orElseGet(() -> placeRepository.save(
+                Place.builder()
+                    .mapx(rawMapx)
+                    .mapy(rawMapy)
+                    .tourMapx(rawMapx)
+                    .tourMapy(rawMapy)
+                    .placeType(PlaceType.INDIVIDUAL_PLACE)
+                    .petPlace(false)
+                    .barrierFree(false)
+                    .build()
+            ));
     }
 
 
@@ -296,12 +304,27 @@ public class CourseServiceImpl implements CourseService {
                 tourApiService.getPetDetailInfo(Long.parseLong(item.getContentId()));
             }
 
+            double rawMapx = parseDouble(item.getMapx());
+            double rawMapy = parseDouble(item.getMapy());
+            double kakaoMapx = rawMapx;
+            double kakaoMapy = rawMapy;
+
+            if (item.getTitle() != null && !item.getTitle().isBlank() && kakaoLocalClient != null) {
+                KakaoLocalClient.RoadCoordinate road = kakaoLocalClient.searchKeyword(item.getTitle());
+                if (road != null) {
+                    kakaoMapx = road.x();
+                    kakaoMapy = road.y();
+                }
+            }
+
             Place newPlace = Place.builder()
                     .contentId(item.getContentId())
                     .petPlace(Boolean.TRUE.equals(item.getIsPetPlace()))
                     .barrierFree(Boolean.TRUE.equals(item.getIsBarrierFree()))
-                    .mapx(parseDouble(item.getMapx()))
-                    .mapy(parseDouble(item.getMapy()))
+                    .mapx(kakaoMapx)
+                    .mapy(kakaoMapy)
+                    .tourMapx(rawMapx)
+                    .tourMapy(rawMapy)
                     .build();
 
             return placeRepository.save(newPlace);

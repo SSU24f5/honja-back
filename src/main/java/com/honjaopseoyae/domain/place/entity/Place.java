@@ -1,9 +1,10 @@
 package com.honjaopseoyae.domain.place.entity;
 
-
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -19,9 +20,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place extends BaseEntity {
 
-    private double mapx;                  // 위도 (kakao_x)
+    private double mapx;                  // 경도 (kakao_x / 길찾기 정제 좌표)
 
-    private double mapy;                  // 경도 (kakao_y)
+    private double mapy;                  // 위도 (kakao_y / 길찾기 정제 좌표)
+
+    private double tourMapx;              // Tour API 원본 경도
+
+    private double tourMapy;              // Tour API 원본 위도
 
     private String image;                 // 이미지 s3 url
 
@@ -36,13 +41,16 @@ public class Place extends BaseEntity {
 
     private String cat3;
 
+    @Enumerated(EnumType.STRING)
     private PlaceType placeType;
 
     @Builder
-    private Place(double mapx, double mapy, String image, boolean petPlace,
+    private Place(double mapx, double mapy, double tourMapx, double tourMapy, String image, boolean petPlace,
                   boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType) {
         this.mapx = mapx;
         this.mapy = mapy;
+        this.tourMapx = tourMapx == 0.0 ? mapx : tourMapx;
+        this.tourMapy = tourMapy == 0.0 ? mapy : tourMapy;
         this.image = image;
         this.petPlace = petPlace;
         this.barrierFree = barrierFree;
@@ -60,5 +68,10 @@ public class Place extends BaseEntity {
         this.barrierFree = barrierFree;
         this.contentType = contentType;
         this.cat3 = cat3;
+    }
+
+    public void updateCoordinates(double mapx, double mapy) {
+        this.mapx = mapx;
+        this.mapy = mapy;
     }
 }

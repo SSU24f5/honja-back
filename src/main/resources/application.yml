@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:application-secret.yml
   datasource:
     url: jdbc:mysql://localhost:3306/HON_DB
     username: root
@@ -13,14 +15,9 @@ spring:
       hibernate:
         format_sql: true
 
-kakao:
-  base-url: https://apis-navi.kakaomobility.com
-  rest-api-key: 75ad8ef966f3cdd834c5282ecf2b9450
-  local:
-    base-url: https://dapi.kakao.com
 
 jwt:
   token:
-    secret: ${JWT_SECRET_KEY}
+    secret: ${jwt.secret-key}
     expiration:
       access: 3600000

@@ -49,6 +49,7 @@ public class CourseUpdateRequestDto {
 
 		private OrderType orderType;
 
+		private String title;
 		private String contentId;
 		private Boolean isPetPlace;
 		private Boolean isBarrierFree;

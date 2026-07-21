@@ -54,24 +54,9 @@ public class KakaoMobilityClient {
 		double destinationX,
 		double destinationY
 	) {
-		// return getRouteSummaryAsync(originX, originY, destinationX, destinationY)
-		// 	.blockOptional(TIMEOUT)
-		// 	.orElse(null);
-
-		String response = kakaoMobilityWebClient.get()
-			.uri(uriBuilder -> uriBuilder
-				.path("/v1/directions")
-				.queryParam("origin", originX + "," + originY)
-				.queryParam("destination", destinationX + "," + destinationY)
-				.queryParam("summary", true)
-				.build())
-			.retrieve()
-			.bodyToMono(String.class)
-			.block();
-
-		System.out.println(response);
-
-		return null;
+		return getRouteSummaryAsync(originX, originY, destinationX, destinationY)
+			.blockOptional(TIMEOUT)
+			.orElse(null);
 	}
 
 	private RouteSummary extractSummary(KakaoDirectionsResponseDto response) {

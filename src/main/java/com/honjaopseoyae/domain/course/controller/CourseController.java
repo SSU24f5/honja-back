@@ -54,8 +54,8 @@ public class CourseController {
     @DeleteMapping("/{courseId}")
     public ApiResponse<String> deleteCourse(
             @PathVariable Long courseId,
-            @AuthenticationPrincipal User user) {
-        courseService.deleteCourse(courseId, user.getId());
+            @AuthenticationPrincipal PrincipalDetails pd) {
+        courseService.deleteCourse(courseId, pd.getUserId());
         return ApiResponse.onSuccess("코스가 성공적으로 삭제되었습니다.");
     }
 }

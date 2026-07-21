@@ -66,6 +66,48 @@ public class KakaoLocalClient {
 		);
 	}
 
+	public RoadCoordinate searchKeyword(String query) {
+		if (query == null || query.isBlank()) {
+			return null;
+		}
+
+		try {
+			com.honjaopseoyae.domain.course.dto.response.KakaoSearchKeywordResponseDto response = kakaoLocalWebClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path("/v2/local/search/keyword.json")
+					.queryParam("query", query)
+					.build())
+				.retrieve()
+				.bodyToMono(com.honjaopseoyae.domain.course.dto.response.KakaoSearchKeywordResponseDto.class)
+				.onErrorResume(e -> {
+					log.warn("Kakao Local searchKeyword failed for query: {}", query, e);
+					return reactor.core.publisher.Mono.empty();
+				})
+				.block();
+
+			if (response == null || response.getDocuments() == null || response.getDocuments().isEmpty()) {
+				log.info("searchKeyword empty result for query: {}", query);
+				return null;
+			}
+
+			com.honjaopseoyae.domain.course.dto.response.KakaoSearchKeywordResponseDto.Document document = response.getDocuments().get(0);
+			String xStr = document.getX();
+			String yStr = document.getY();
+
+			if (xStr == null || xStr.isBlank() || yStr == null || yStr.isBlank()) {
+				return null;
+			}
+
+			return new RoadCoordinate(
+				Double.parseDouble(xStr),
+				Double.parseDouble(yStr)
+			);
+		} catch (Exception e) {
+			log.error("Exception in searchKeyword for query: {}", query, e);
+			return null;
+		}
+	}
+
 	public record RoadCoordinate(
 		double x,
 		double y
