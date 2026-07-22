@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto;
 import com.honjaopseoyae.domain.course.entity.enums.CourseRole;
 import com.honjaopseoyae.domain.course.entity.enums.InviteStatus;
 import com.honjaopseoyae.domain.course.entity.mapping.CourseMember;
@@ -21,4 +24,18 @@ public interface CourseMemberRepository extends JpaRepository<CourseMember, Long
 	Optional<CourseMember> findByCourseIdAndUserId(Long courseId, Long userId);
 
 	Optional<CourseMember> findByCourseIdAndUserIdAndRoleAndStatus(Long courseId, Long userId, CourseRole role, InviteStatus status);
+
+	@Query("SELECT new com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto(" +
+		"  cm.id, c.id, c.name, c.description, ownerUser.nickname, ownerUser.email, cm.createdAt, cm.status" +
+		") " +
+		"FROM CourseMember cm " +
+		"JOIN cm.course c " +
+		"JOIN CourseMember owner ON owner.course = c AND owner.role = :ownerRole " +
+		"JOIN owner.user ownerUser " +
+		"WHERE cm.user.id = :userId AND cm.status = :inviteStatus")
+	List<CourseInvitationResponseDto> findMyInvitationsWithOwner(
+		@Param("userId") Long userId,
+		@Param("ownerRole") CourseRole ownerRole,
+		@Param("inviteStatus") InviteStatus inviteStatus
+	);
 }

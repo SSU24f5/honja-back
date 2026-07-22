@@ -17,6 +17,7 @@ import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
 import com.honjaopseoyae.domain.course.entity.Course;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
+import com.honjaopseoyae.domain.course.support.CourseMemberValidator;
 import com.honjaopseoyae.domain.place.entity.Place;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.apipayload.domain.CourseErrorStatus;
@@ -34,14 +35,10 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import com.honjaopseoyae.domain.course.dto.request.CourseInviteRequestDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto;
 import com.honjaopseoyae.domain.user.repository.UserRepository;
-import com.honjaopseoyae.global.apipayload.domain.UserErrorStatus;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +47,7 @@ public class CourseServiceImpl implements CourseService {
     private final CourseFinder courseFinder;
     private final CourseRepository courseRepository;
     private final CourseMemberRepository courseMemberRepository;
+    private final CourseMemberValidator courseMemberValidator;
     private final UserReader userReader;
     private final CoursePlaceRepository coursePlaceRepository;
     private final PlaceRepository placeRepository;
@@ -131,24 +129,13 @@ public class CourseServiceImpl implements CourseService {
         List<CoursePlace> existingCoursePlaces =
             coursePlaceRepository.findAllByCourseId(course.getId());
 
-        List<CourseUpdateRequestDto.CoursePlaceItem> incomingPlaces =
-            requestDto.getDates().stream()
-                .flatMap(dateItem -> dateItem.getPlaces().stream())
-                .toList();
-
-        deleteRemovedPlaces(existingCoursePlaces, incomingPlaces);
-
         List<CoursePlace> updatedCoursePlaces =
             requestDto.getDates().stream()
-                .flatMap(dateItem ->
-                    dateItem.getPlaces().stream()
-                        .map(item -> processCoursePlaceItem(
-                            course,
-                            dateItem.getDate(),
-                            item,
-                            existingCoursePlaces
-                        ))
-                )
+                .flatMap(dateItem -> updatePlacesForDate(
+                    course,
+                    dateItem,
+                    existingCoursePlaces
+                ).stream())
                 .toList();
 
         updateCoursePlaceRouteInfos(updatedCoursePlaces);
@@ -156,13 +143,40 @@ public class CourseServiceImpl implements CourseService {
         return buildUpdateResponse(course, updatedCoursePlaces);
     }
 
-    private void deleteRemovedPlaces(List<CoursePlace> existingPlaces, List<CourseUpdateRequestDto.CoursePlaceItem> incomingPlaces) {
-        Set<Long> incomingIds = incomingPlaces.stream()
+    /**
+     * A course update is scoped to one day.  Places belonging to other days
+     * must remain untouched; a place is never moved to another day by this API.
+     */
+    private List<CoursePlace> updatePlacesForDate(
+        Course course,
+        CourseUpdateRequestDto.CourseDateItem dateItem,
+        List<CoursePlace> existingPlaces
+    ) {
+        List<CoursePlace> existingPlacesForDate = existingPlaces.stream()
+            .filter(coursePlace -> dateItem.getDate().equals(coursePlace.getDate()))
+            .toList();
+
+        deleteRemovedPlacesForDate(existingPlacesForDate, dateItem.getPlaces());
+
+        return dateItem.getPlaces().stream()
+            .map(item -> processCoursePlaceItem(
+                course,
+                dateItem.getDate(),
+                item,
+                existingPlacesForDate
+            ))
+            .toList();
+    }
+
+    private void deleteRemovedPlacesForDate(
+        List<CoursePlace> existingPlacesForDate, List<CourseUpdateRequestDto.CoursePlaceItem> incomingPlaces
+    ) {
+        var incomingIds = incomingPlaces.stream()
                 .map(CourseUpdateRequestDto.CoursePlaceItem::getCoursePlaceId)
-                .filter(Objects::nonNull)
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        List<CoursePlace> toDelete = existingPlaces.stream()
+        List<CoursePlace> toDelete = existingPlacesForDate.stream()
                 .filter(cp -> !incomingIds.contains(cp.getId()))
                 .collect(Collectors.toList());
 
@@ -429,11 +443,9 @@ public class CourseServiceImpl implements CourseService {
     public void inviteMemberByEmail(CourseInviteRequestDto requestDto, Long currentUserId) {
         Course course = courseFinder.findById(requestDto.getCourseId());
 
-        courseMemberRepository.findByCourseIdAndUserIdAndStatus(course.getId(), currentUserId, InviteStatus.ACCEPTED)
-            .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED));
+        courseMemberValidator.validateCourseAccess(course.getId(), currentUserId);
 
-        User targetUser = userRepository.findByEmail(requestDto.getEmail())
-            .orElseThrow(() -> new GeneralException(UserErrorStatus.USER_NOT_FOUND));
+        User targetUser = userReader.getByEmail(requestDto.getEmail());
 
         if (targetUser.getId().equals(currentUserId)) {
             throw new GeneralException(CourseErrorStatus.CANNOT_INVITE_SELF);
@@ -457,27 +469,12 @@ public class CourseServiceImpl implements CourseService {
     @Transactional(readOnly = true)
     @Override
     public List<CourseInvitationResponseDto> getMyInvitations(Long currentUserId) {
-        List<CourseMember> pendingMemberships = courseMemberRepository.findAllByUserIdAndStatus(currentUserId, InviteStatus.PENDING);
-
-        return pendingMemberships.stream()
-            .map(member -> {
-                CourseMember owner = member.getCourse().getMembers().stream()
-                    .filter(m -> m.getRole() == CourseRole.OWNER)
-                    .findFirst()
-                    .orElse(null);
-
-                String inviterName = (owner != null && owner.getUser() != null) ? owner.getUser().getNickname() : null;
-                String inviterEmail = (owner != null && owner.getUser() != null) ? owner.getUser().getEmail() : null;
-
-                return CourseInvitationResponseDto.from(member, inviterName, inviterEmail);
-            })
-            .collect(Collectors.toList());
+        return courseMemberRepository.findMyInvitationsWithOwner(currentUserId, CourseRole.OWNER, InviteStatus.PENDING);
     }
 
     @Override
     public void acceptInvitation(Long courseMemberId, Long currentUserId) {
-        CourseMember courseMember = courseMemberRepository.findById(courseMemberId)
-            .orElseThrow(() -> new GeneralException(CourseErrorStatus.INVITATION_NOT_FOUND));
+        CourseMember courseMember = courseMemberValidator.validateExistingCourseMember(courseMemberId);
 
         if (!courseMember.getUser().getId().equals(currentUserId)) {
             throw new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED);
@@ -492,8 +489,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void rejectInvitation(Long courseMemberId, Long currentUserId) {
-        CourseMember courseMember = courseMemberRepository.findById(courseMemberId)
-            .orElseThrow(() -> new GeneralException(CourseErrorStatus.INVITATION_NOT_FOUND));
+        CourseMember courseMember = courseMemberValidator.validateExistingCourseMember(courseMemberId);
 
         if (!courseMember.getUser().getId().equals(currentUserId)) {
             throw new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED);
