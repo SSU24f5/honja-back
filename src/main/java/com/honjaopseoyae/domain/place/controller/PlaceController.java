@@ -2,10 +2,7 @@ package com.honjaopseoyae.domain.place.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.honjaopseoyae.global.apipayload.ApiResponse;
 import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
@@ -51,5 +48,12 @@ public class PlaceController {
 		List<TourCommonResponseDto> response = tourApiService.getPetPlaceFromTourAPI();
 		return ApiResponse.onSuccess(response);
 	}
+
+    //장소 가져오기
+    @PostMapping("/sync")
+    public ApiResponse<String> syncTourPlaces() {
+        tourApiService.syncTourPlacesWithApi();
+        return ApiResponse.onSuccess("동기화 완료");
+    }
 }
 

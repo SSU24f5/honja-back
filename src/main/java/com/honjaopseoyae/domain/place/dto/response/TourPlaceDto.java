@@ -2,6 +2,7 @@ package com.honjaopseoyae.domain.place.dto.response;
 
 import com.honjaopseoyae.domain.place.entity.Place;
 
+import com.honjaopseoyae.domain.place.util.IndoorOutdoorClassifier;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -46,7 +47,7 @@ public class TourPlaceDto {
 	private String lclsSystm2;          // 지자체 시스템 코드 2
 	private String lclsSystm3;          // 지자체 시스템 코드 3
 
-	public Place toEntity(boolean isPetPlace, boolean isBarrierFree) {
+	public Place toEntity(boolean isPetPlace, boolean isBarrierFree, IndoorOutdoorClassifier classifier) {
 		return Place.builder()
 			.contentId(contentid)
 			.contentType(parseContentType(contenttypeid))
@@ -55,6 +56,8 @@ public class TourPlaceDto {
 			.image(firstimage)
 			.petPlace(isPetPlace)
 			.barrierFree(isBarrierFree)
+            .title(title)
+            .indoor(classifier.isIndoor(title))
 			.build();
 	}
 

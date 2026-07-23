@@ -19,9 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place extends BaseEntity {
 
-    private double mapx;                  // 위도 (kakao_x)
+    private double mapx; // 경도
 
-    private double mapy;                  // 경도 (kakao_y)
+    private double mapy; // 위도
 
     private String image;                 // 이미지 s3 url
 
@@ -36,9 +36,15 @@ public class Place extends BaseEntity {
 
     private PlaceType placeType;
 
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "indoor")
+    private boolean indoor; //true: 실내, false: 실외
+
     @Builder
     private Place(double mapx, double mapy, String image, boolean petPlace,
-                  boolean barrierFree, String contentId, Integer contentType,PlaceType placeType) {
+                  boolean barrierFree, String contentId, Integer contentType,PlaceType placeType, String title, boolean indoor) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
@@ -47,14 +53,18 @@ public class Place extends BaseEntity {
         this.contentId = contentId;
         this.contentType = contentType;
         this.placeType = placeType;
+        this.title = title;
+        this.indoor = indoor;
     }
 
-    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType) {
+    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType, String title, boolean indoor) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
         this.petPlace = petPlace;
         this.barrierFree = barrierFree;
         this.contentType = contentType;
+        this.title = title;
+        this.indoor = indoor;
     }
 }

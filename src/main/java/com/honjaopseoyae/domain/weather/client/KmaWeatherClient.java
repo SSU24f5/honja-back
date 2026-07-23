@@ -2,7 +2,7 @@ package com.honjaopseoyae.domain.weather.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.honjaopseoyae.domain.weather.JejuRegion;
+import com.honjaopseoyae.domain.weather.converter.KmaGridConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,6 +19,7 @@ public class KmaWeatherClient {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final KmaGridConverter kmaGridConverter;
 
     @Value("${kma.service-key}")
     private String serviceKey;
@@ -28,7 +29,8 @@ public class KmaWeatherClient {
 
     public record FcstItem(int skyCode, int ptyCode, double temperature) {}
 
-    public FcstItem getUltraSrtFcst(JejuRegion region) {
+    public FcstItem getUltraSrtFcst(double lat, double lon) {
+        KmaGridConverter.Grid grid = kmaGridConverter.toGrid(lat, lon);
         LocalDateTime now = LocalDateTime.now();
 
         LocalDateTime baseDateTime = now.getMinute() < 45 ? now.minusHours(1) : now;
@@ -42,8 +44,8 @@ public class KmaWeatherClient {
                 .queryParam("dataType", "JSON")
                 .queryParam("base_date", baseDate)
                 .queryParam("base_time", baseTime)
-                .queryParam("nx", region.getNx())
-                .queryParam("ny", region.getNy())
+                .queryParam("nx", grid.nx())
+                .queryParam("ny", grid.ny())
                 .build(true)
                 .toUri();
 

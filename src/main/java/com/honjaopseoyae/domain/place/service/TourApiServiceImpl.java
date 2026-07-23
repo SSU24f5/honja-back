@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.honjaopseoyae.domain.place.util.IndoorOutdoorClassifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ public class TourApiServiceImpl implements TourApiService {
 
 	private final TourApiClient tourApiClient;
 	private final PlaceRepository placeRepository;
+    private final IndoorOutdoorClassifier indoorOutdoorClassifier;
 
 	@Override
 	public TourApiCommonResponse<List<DetailAccessibilityDto>> getBarrierFreeInfo(Long contentId) {
@@ -87,6 +89,17 @@ public class TourApiServiceImpl implements TourApiService {
 
 		return fetchPlaces(BARRIER_FREE_PATH, requestDto);
 	}
+
+    @Override
+    public List<Place> findNearby(double lat, double lon, boolean indoor, double radiusKm, int limit) {
+        return placeRepository.findAllByIndoor(indoor).stream()
+                .map(place -> Map.entry(place, haversine(lat, lon, place.getMapy(), place.getMapx())))
+                .filter(entry -> entry.getValue() <= radiusKm)
+                .sorted(Map.Entry.comparingByValue())
+                .limit(limit)
+                .map(Map.Entry::getKey)
+                .toList();
+    }
 
 	@Transactional
 	@Override
@@ -137,10 +150,10 @@ public class TourApiServiceImpl implements TourApiService {
 
 			Place localPlace = localPlaceMap.get(dto.getContentid());
 
-			if (localPlace == null) {
-				saveList.add(dto.toEntity(false, true));
-				continue;
-			}
+            if (localPlace == null) {
+                saveList.add(dto.toEntity(false, true, indoorOutdoorClassifier));
+                continue;
+            }
 
 			updatePlaceIfChanged(localPlace, dto, saveList);
 		}
@@ -174,39 +187,45 @@ public class TourApiServiceImpl implements TourApiService {
 		return response.getResponse().getBody().getItems().getItem();
 	}
 
-	private void updatePlaceIfChanged(Place place, TourPlaceDto dto, List<Place> saveList) {
-		double mapx = parseDouble(dto.getMapx());
-		double mapy = parseDouble(dto.getMapy());
-		String image = dto.getFirstimage();
-		Integer contentType = parseContentType(dto.getContenttypeid());
+    private void updatePlaceIfChanged(Place place, TourPlaceDto dto, List<Place> saveList) {
+        double mapx = parseDouble(dto.getMapx());
+        double mapy = parseDouble(dto.getMapy());
+        String image = dto.getFirstimage();
+        Integer contentType = parseContentType(dto.getContenttypeid());
+        String title = dto.getTitle();
+        boolean indoor = indoorOutdoorClassifier.isIndoor(title);
 
-		boolean isPetPlace = place.isPetPlace();
-		boolean isBarrierFree = true;
+        boolean isPetPlace = place.isPetPlace();
+        boolean isBarrierFree = true;
 
-		if (!isPlaceChanged(place, mapx, mapy, image, contentType, isPetPlace, isBarrierFree)) {
-			return;
-		}
+        if (!isPlaceChanged(place, mapx, mapy, image, contentType, isPetPlace, isBarrierFree, title, indoor)) {
+            return;
+        }
 
-		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType);
-		saveList.add(place);
-	}
+        place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType, title, indoor);
+        saveList.add(place);
+    }
 
-	private boolean isPlaceChanged(
-		Place place,
-		double mapx,
-		double mapy,
-		String image,
-		Integer contentType,
-		boolean isPetPlace,
-		boolean isBarrierFree
-	) {
-		return Double.compare(place.getMapx(), mapx) != 0
-			|| Double.compare(place.getMapy(), mapy) != 0
-			|| !Objects.equals(place.getImage(), image)
-			|| !Objects.equals(place.getContentType(), contentType)
-			|| place.isPetPlace() != isPetPlace
-			|| place.isBarrierFree() != isBarrierFree;
-	}
+    private boolean isPlaceChanged(
+            Place place,
+            double mapx,
+            double mapy,
+            String image,
+            Integer contentType,
+            boolean isPetPlace,
+            boolean isBarrierFree,
+            String title,
+            boolean indoor
+    ) {
+        return Double.compare(place.getMapx(), mapx) != 0
+                || Double.compare(place.getMapy(), mapy) != 0
+                || !Objects.equals(place.getImage(), image)
+                || !Objects.equals(place.getContentType(), contentType)
+                || place.isPetPlace() != isPetPlace
+                || place.isBarrierFree() != isBarrierFree
+                || !Objects.equals(place.getTitle(), title)
+                || place.isIndoor() != indoor;
+    }
 
 	private PlaceDetailRequestDto createDetailRequest(Long contentId) {
 		return PlaceDetailRequestDto.builder()
@@ -240,4 +259,15 @@ public class TourApiServiceImpl implements TourApiService {
 			return null;
 		}
 	}
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon/2) * Math.sin(dLon/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
 }
