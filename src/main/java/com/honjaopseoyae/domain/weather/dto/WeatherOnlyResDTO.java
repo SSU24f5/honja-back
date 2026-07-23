@@ -13,5 +13,5 @@ public record WeatherOnlyResDTO(
         Integer pm10Value,
         Integer pm25Value,
         RecommendationType recommendation,
-        boolean weatherDataReliable   // 추가: false면 기상청 API 실패로 인한 기본값
+        boolean weatherDataReliable   // false면 기상청 API 실패로 인한 기본값
 ) {}

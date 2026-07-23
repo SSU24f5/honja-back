@@ -52,16 +52,16 @@ public class AirKoreaClient {
     private double[] convertToTm(double lat, double lon) {
         CRSFactory crsFactory = new CRSFactory();
         CoordinateReferenceSystem wgs84 = crsFactory.createFromName("EPSG:4326");
-        CoordinateReferenceSystem tmMid = crsFactory.createFromName("EPSG:2097"); // 중부원점(Bessel), 검증 필요
+        CoordinateReferenceSystem tmMid = crsFactory.createFromName("EPSG:2097");
 
         CoordinateTransform transform = new CoordinateTransformFactory()
                 .createTransform(wgs84, tmMid);
 
-        ProjCoordinate src = new ProjCoordinate(lon, lat); // Proj4j는 (x=경도, y=위도) 순서
+        ProjCoordinate src = new ProjCoordinate(lon, lat);
         ProjCoordinate result = new ProjCoordinate();
         transform.transform(src, result);
 
-        return new double[]{result.x, result.y}; // tmX, tmY
+        return new double[]{result.x, result.y};
     }
 
     private String parseNearestStationName(String rawResponse) {

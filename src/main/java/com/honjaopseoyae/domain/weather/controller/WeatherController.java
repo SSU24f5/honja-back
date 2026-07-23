@@ -2,7 +2,7 @@ package com.honjaopseoyae.domain.weather.controller;
 
 import com.honjaopseoyae.domain.weather.dto.WeatherOnlyResDTO;
 import com.honjaopseoyae.domain.weather.dto.WeatherResDTO;
-import com.honjaopseoyae.domain.weather.service.WeatherService;
+import com.honjaopseoyae.domain.weather.service.WeatherServiceImpl;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WeatherController {
 
-    private final WeatherService weatherService;
+    private final WeatherServiceImpl weatherService;
 
     @GetMapping("/recommendation")
     public ApiResponse<WeatherResDTO> getRecommendation(
