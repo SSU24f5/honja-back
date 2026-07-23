@@ -51,6 +51,7 @@ public class TourPlaceDto {
 		return Place.builder()
 			.contentId(contentid)
 			.contentType(parseContentType(contenttypeid))
+			.cat3(cat3)
 			.mapx(parseDouble(mapx))
 			.mapy(parseDouble(mapy))
 			.image(firstimage)

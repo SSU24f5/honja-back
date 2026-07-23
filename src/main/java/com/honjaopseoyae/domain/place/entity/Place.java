@@ -34,6 +34,8 @@ public class Place extends BaseEntity {
 
     private Integer contentType;         // 카테고리 코드
 
+    private String cat3;
+
     private PlaceType placeType;
 
     @Column(name = "title")
@@ -52,6 +54,7 @@ public class Place extends BaseEntity {
         this.barrierFree = barrierFree;
         this.contentId = contentId;
         this.contentType = contentType;
+        this.cat3 = cat3;
         this.placeType = placeType;
         this.title = title;
         this.indoor = indoor;
