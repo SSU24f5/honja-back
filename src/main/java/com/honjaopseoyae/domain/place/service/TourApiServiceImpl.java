@@ -16,6 +16,7 @@ import com.honjaopseoyae.domain.place.client.TourApiClient;
 import com.honjaopseoyae.domain.place.converter.TourPlaceConverter;
 import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.domain.place.dto.request.AreaBaseTourRequestDto;
+import com.honjaopseoyae.domain.place.dto.request.KeywordSearchTourRequestDto;
 import com.honjaopseoyae.domain.place.dto.request.PlaceDetailRequestDto;
 import com.honjaopseoyae.domain.place.dto.response.DetailAccessibilityDto;
 import com.honjaopseoyae.domain.place.dto.response.PetDetailResponseDto;
@@ -273,8 +274,8 @@ public class TourApiServiceImpl implements TourApiService {
 	}
 
 	private List<TourCommonResponseDto> fetchKeywordPlaces(String path, String keyword, Integer pageNo, Integer numOfRows) {
-		com.honjaopseoyae.domain.place.dto.request.KeywordSearchTourRequestDto requestDto =
-			com.honjaopseoyae.domain.place.dto.request.KeywordSearchTourRequestDto.builder()
+		KeywordSearchTourRequestDto requestDto =
+			KeywordSearchTourRequestDto.builder()
 				.keyword(keyword)
 				.pageNo(pageNo != null ? pageNo : 1)
 				.numOfRows(numOfRows != null ? numOfRows : 10)
@@ -286,7 +287,6 @@ public class TourApiServiceImpl implements TourApiService {
 		List<TourPlaceDto> dtos = extractItems(response);
 		return dtos.stream()
 			.map(TourPlaceDto::toCommonResponseDto)
-			.limit(10)
 			.collect(Collectors.toList());
 	}
 }

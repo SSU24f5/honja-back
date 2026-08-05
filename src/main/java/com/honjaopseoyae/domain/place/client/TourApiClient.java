@@ -170,6 +170,21 @@ public class TourApiClient {
 					if (request.getSigunguCode() != null) {
 						builder.queryParam("sigunguCode", request.getSigunguCode());
 					}
+					if (request.getCat1() != null) {
+						builder.queryParam("cat1", request.getCat1());
+					}
+					if (request.getCat2() != null) {
+						builder.queryParam("cat2", request.getCat2());
+					}
+					if (request.getCat3() != null) {
+						builder.queryParam("cat3", request.getCat3());
+					}
+					if (request.getLDongRegnCd() != null) {
+						builder.queryParam("lDongRegnCd", request.getLDongRegnCd());
+					}
+					if (request.getLDongSignguCd() != null) {
+						builder.queryParam("lDongSignguCd", request.getLDongSignguCd());
+					}
 					if (request.getLclsSystm1() != null) {
 						builder.queryParam("lclsSystm1", request.getLclsSystm1());
 					}
@@ -180,6 +195,10 @@ public class TourApiClient {
 				.bodyToMono(TOUR_PLACE_TYPE)
 				.block();
 
+		} catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+			log.error("TourAPI keyword search failed - path: {}, keyword: {}, response: {}",
+				path, request.getKeyword(), e.getResponseBodyAsString(), e);
+			return null;
 		} catch (Exception e) {
 			log.error("TourAPI 키워드 검색 요청 실패 - path: {}, keyword: {}", path, request.getKeyword(), e);
 			return null;

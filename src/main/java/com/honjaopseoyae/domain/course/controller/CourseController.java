@@ -83,7 +83,7 @@ public class CourseController {
                     """)
     public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto, @AuthenticationPrincipal PrincipalDetails pd) {
 
-        CourseCreateResponseDto response = courseService.createCourse(requestDto, pd.getUserId());
+        CourseCreateResponseDto response = courseService.createCourse(requestDto, 1L);
         return ApiResponse.onSuccess(response);
     }
 

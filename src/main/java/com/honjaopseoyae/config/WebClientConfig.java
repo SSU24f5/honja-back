@@ -17,7 +17,7 @@ public class WebClientConfig {
 	public WebClient tourApiWebClient() {
 		String baseUrl = "https://apis.data.go.kr/B551011";
 		DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(baseUrl);
-		factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
+		factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.TEMPLATE_AND_VALUES);
 
 		return WebClient.builder()
 			.uriBuilderFactory(factory)
