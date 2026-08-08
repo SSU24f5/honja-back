@@ -54,7 +54,7 @@ public class PlaceController {
 	}
 
 	/** TourAPI KorService2/searchKeyword2 기반 키워드 검색 */
-	@GetMapping("/search")
+	@GetMapping("/search/general")
 	public ApiResponse<List<TourCommonResponseDto>> searchPlaces(
 		@RequestParam String keyword,
 		@RequestParam(defaultValue = "1") Integer pageNo,
@@ -75,7 +75,7 @@ public class PlaceController {
 			tourApiService.searchBarrierFreePlacesByKeyword(keyword, pageNo, numOfRows));
 	}
 
-	@GetMapping("/search/pet-friendly")
+	@GetMapping("/search/pet")
 	public ApiResponse<List<TourCommonResponseDto>> searchPetPlaces(
 		@RequestParam String keyword,
 		@RequestParam(defaultValue = "1") Integer pageNo,
