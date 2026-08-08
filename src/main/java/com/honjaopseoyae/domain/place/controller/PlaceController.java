@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.honjaopseoyae.global.apipayload.ApiResponse;
@@ -50,6 +51,38 @@ public class PlaceController {
 	public ApiResponse<List<TourCommonResponseDto>> getPetPlace() {
 		List<TourCommonResponseDto> response = tourApiService.getPetPlaceFromTourAPI();
 		return ApiResponse.onSuccess(response);
+	}
+
+	/** TourAPI KorService2/searchKeyword2 기반 키워드 검색 */
+	@GetMapping("/search/general")
+	public ApiResponse<List<TourCommonResponseDto>> searchPlaces(
+		@RequestParam String keyword,
+		@RequestParam(defaultValue = "1") Integer pageNo,
+		@RequestParam(defaultValue = "10") Integer numOfRows
+	) {
+		List<TourCommonResponseDto> response =
+			tourApiService.searchCommonPlacesByKeyword(keyword, pageNo, numOfRows);
+		return ApiResponse.onSuccess(response);
+	}
+
+	@GetMapping("/search/barrier-free")
+	public ApiResponse<List<TourCommonResponseDto>> searchBarrierFreePlaces(
+		@RequestParam String keyword,
+		@RequestParam(defaultValue = "1") Integer pageNo,
+		@RequestParam(defaultValue = "10") Integer numOfRows
+	) {
+		return ApiResponse.onSuccess(
+			tourApiService.searchBarrierFreePlacesByKeyword(keyword, pageNo, numOfRows));
+	}
+
+	@GetMapping("/search/pet")
+	public ApiResponse<List<TourCommonResponseDto>> searchPetPlaces(
+		@RequestParam String keyword,
+		@RequestParam(defaultValue = "1") Integer pageNo,
+		@RequestParam(defaultValue = "10") Integer numOfRows
+	) {
+		return ApiResponse.onSuccess(
+			tourApiService.searchPetPlacesByKeyword(keyword, pageNo, numOfRows));
 	}
 }
 

@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
 
     private void validateRequiredTerms(List<Long> agreedTermIds) {
         List<Term> requiredTerms = termRepository.findAll().stream()
-                .filter(Term::isAgreed)
+                .filter(Term::isRequired)
                 .toList();
 
         for (Term required : requiredTerms) {

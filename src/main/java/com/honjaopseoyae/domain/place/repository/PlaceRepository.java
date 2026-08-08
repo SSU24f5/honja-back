@@ -13,4 +13,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
 	List<Place> findAllByContentIdIn(List<String> contentIds);
 
 	Optional<Place> findByContentId(String contentId);
+
+	Optional<Place> findByMapxAndMapyAndPlaceType(double mapx, double mapy, com.honjaopseoyae.domain.place.entity.PlaceType placeType);
 }

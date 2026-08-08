@@ -19,5 +19,11 @@ public interface TourApiService {
 	List<TourCommonResponseDto> getCommonPlaceFromTourAPI();
 
 	void syncTourPlacesWithApi();
+
+	List<TourCommonResponseDto> searchCommonPlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows);
+
+	List<TourCommonResponseDto> searchBarrierFreePlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows);
+
+	List<TourCommonResponseDto> searchPetPlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows);
 }
 

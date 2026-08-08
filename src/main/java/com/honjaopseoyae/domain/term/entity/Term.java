@@ -21,15 +21,16 @@ public class Term extends BaseEntity {
 
     private String title;                 // 제목
 
+    @Column(columnDefinition = "TEXT")
     private String content;               // 내용
 
-    @Column(name = "is_agreed")
-    private boolean isAgreed;             // 동의 여부(필수 동의항목 동의 여부)
+    @Column(name = "is_required")
+    private boolean isRequired;             // 동의 여부(필수 동의항목 동의 여부)
 
     @Builder
-    private Term(String title, String content, boolean isAgreed) {
+    private Term(String title, String content, boolean isRequired) {
         this.title = title;
         this.content = content;
-        this.isAgreed = isAgreed;
+        this.isRequired = isRequired;
     }
 }

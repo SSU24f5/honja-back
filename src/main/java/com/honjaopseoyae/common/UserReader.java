@@ -20,4 +20,9 @@ public class UserReader {
 			.orElseThrow(() ->
 				new GeneralException(UserErrorStatus.USER_NOT_FOUND));
 	}
+
+	public User getByEmail(String email){
+		return userRepository.findByEmail(email)
+			.orElseThrow(()-> new GeneralException(UserErrorStatus.USER_NOT_FOUND));
+	}
 }

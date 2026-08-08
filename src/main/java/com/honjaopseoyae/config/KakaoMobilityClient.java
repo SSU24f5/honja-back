@@ -42,7 +42,9 @@ public class KakaoMobilityClient {
 			.bodyToMono(KakaoDirectionsResponseDto.class)
 			.timeout(TIMEOUT)
 			.map(this::extractSummary)
-			.onErrorResume(e -> Mono.empty());
+			.onErrorResume(e -> { e.printStackTrace();
+				return Mono.empty();
+			});
 	}
 
 	/** 단건 동기 호출이 필요한 다른 곳에서 쓰던 기존 메서드는 유지 */

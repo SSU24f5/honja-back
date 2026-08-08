@@ -10,7 +10,11 @@ import com.honjaopseoyae.domain.course.dto.request.CourseOrderRecommendRequestDt
 import com.honjaopseoyae.domain.course.dto.response.CourseOrderRecommendResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseOrderRecommendResponseDto.CoursePlaceItem;
 import com.honjaopseoyae.domain.course.entity.Course;
+import com.honjaopseoyae.domain.course.entity.enums.CourseRole;
+import com.honjaopseoyae.domain.course.entity.enums.InviteStatus;
+import com.honjaopseoyae.domain.course.entity.mapping.CourseMember;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
+import com.honjaopseoyae.domain.course.repository.CourseMemberRepository;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
 import com.honjaopseoyae.domain.course.support.CourseFinder;
@@ -43,7 +47,7 @@ public class RecommendServiceImpl implements RecommendService {
 
 	private static final double WALK_SPEED_KMH = 4.0;
 	private final CourseFinder courseFinder;
-	private final CourseRepository courseRepository;
+	private final CourseMemberRepository courseMemberRepository;
 	private final CoursePlaceRepository coursePlaceRepository;
 	private final RouteRecommendEngine routeRecommendEngine;
 	private final KakaoMobilityClient kakaoMobilityClient;
@@ -77,9 +81,14 @@ public class RecommendServiceImpl implements RecommendService {
 	}
 
 	private void validateOwner(Course course, Long userId) {
-		if (!course.getUser().getId().equals(userId)) {
-			throw new GeneralException(UserErrorStatus.INVALID_USER);
-		}
+		courseMemberRepository
+			.findByCourseIdAndUserIdAndRoleAndStatus(
+				course.getId(),
+				userId,
+				CourseRole.OWNER,
+				InviteStatus.ACCEPTED
+			)
+			.orElseThrow(() -> new GeneralException(UserErrorStatus.INVALID_USER));
 	}
 
 	private Map<Integer, RouteSegment> calculateSegments(List<CoursePlace> orderedPlaces) {

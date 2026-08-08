@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.honjaopseoyae.domain.course.entity.Course;
-import com.honjaopseoyae.domain.course.entity.CourseType;
-import com.honjaopseoyae.domain.course.entity.OrderType;
+import com.honjaopseoyae.domain.course.entity.enums.CourseType;
+import com.honjaopseoyae.domain.course.entity.enums.OrderType;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
 import com.honjaopseoyae.domain.place.entity.Place;
 
@@ -20,7 +20,6 @@ public class CourseDetailResponseDto {
 	private String name;
 	private String description;
 	private boolean isPublic;
-	private boolean isExternal;
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private CourseType courseType;
@@ -36,7 +35,6 @@ public class CourseDetailResponseDto {
 			.name(course.getName())
 			.description(course.getDescription())
 			.isPublic(course.isPublic())
-			.isExternal(course.isExternal())
 			.startDate(course.getStartDate())
 			.endDate(course.getEndDate())
 			.courseType(course.getCourseType())
@@ -78,22 +76,28 @@ public class CourseDetailResponseDto {
 		private double mapy;
 		private boolean petPlace;
 		private boolean barrierFree;
+		private String image;
+		private com.honjaopseoyae.domain.place.entity.PlaceType placeType;
+		private String cat3;
 
 		public static CoursePlaceItem from(CoursePlace coursePlace) {
 			Place place = coursePlace.getPlace();
 
 			return CoursePlaceItem.builder()
 				.coursePlaceId(coursePlace.getId())
-				.placeId(place.getId())
+				.placeId(place != null ? place.getId() : null)
 				.order(coursePlace.getSortOrder().intValue())
 				.orderType(coursePlace.getOrderType())
 				.distance(coursePlace.getDistance())
 				.timeTaken(coursePlace.getTimeTaken())
-				.contentId(place.getContentId())
-				.mapx(place.getMapx())
-				.mapy(place.getMapy())
-				.petPlace(place.isPetPlace())
-				.barrierFree(place.isBarrierFree())
+				.contentId(place != null ? place.getContentId() : null)
+				.mapx(place != null ? place.getMapx() : 0.0)
+				.mapy(place != null ? place.getMapy() : 0.0)
+				.petPlace(place != null && place.isPetPlace())
+				.barrierFree(place != null && place.isBarrierFree())
+				.image(place != null ? place.getImage() : null)
+				.placeType(place != null ? place.getPlaceType() : null)
+				.cat3(place != null ? place.getCat3() : null)
 				.build();
 		}
 	}

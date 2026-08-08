@@ -47,15 +47,37 @@ public class TourPlaceDto {
 	private String lclsSystm3;          // 지자체 시스템 코드 3
 
 	public Place toEntity(boolean isPetPlace, boolean isBarrierFree) {
+		double rawMapx = parseDouble(mapx);
+		double rawMapy = parseDouble(mapy);
+
 		return Place.builder()
 			.contentId(contentid)
 			.contentType(parseContentType(contenttypeid))
 			.cat3(cat3)
-			.mapx(parseDouble(mapx))
-			.mapy(parseDouble(mapy))
+			.mapx(rawMapx)
+			.mapy(rawMapy)
+			.tourMapx(rawMapx)
+			.tourMapy(rawMapy)
 			.image(firstimage)
 			.petPlace(isPetPlace)
 			.barrierFree(isBarrierFree)
+			.build();
+	}
+
+	public TourCommonResponseDto toCommonResponseDto() {
+		return TourCommonResponseDto.builder()
+			.contentid(contentid)
+			.contenttypeid(contenttypeid)
+			.title(title)
+			.tel(tel)
+			.addr1(addr1)
+			.addr2(addr2)
+			.mapx(mapx)
+			.mapy(mapy)
+			.mlevel(mlevel)
+			.firstimage(firstimage)
+			.firstimage2(firstimage2)
+			.cpyrhtDivCd(cpyrhtDivCd)
 			.build();
 	}
 
