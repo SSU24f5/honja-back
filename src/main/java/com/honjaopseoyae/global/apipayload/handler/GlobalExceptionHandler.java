@@ -1,5 +1,5 @@
 package com.honjaopseoyae.global.apipayload.handler;
-
+import lombok.extern.slf4j.Slf4j;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
 import com.honjaopseoyae.global.apipayload.code.CommonStatus;
 import com.honjaopseoyae.global.apipayload.exception.GeneralException;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -62,8 +63,12 @@ public class GlobalExceptionHandler {
     // 그 외  전체 서버 에러 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleAllException(Exception e) {
+        log.error("Unhandled Exception", e);
+
         var status = CommonStatus.INTERNAL_SERVER_ERROR;
-        ApiResponse<Object> response = ApiResponse.onFailure(status.getCode(), status.getMessage(), null);
+        ApiResponse<Object> response =
+            ApiResponse.onFailure(status.getCode(), status.getMessage(), null);
+
         return new ResponseEntity<>(response, status.getStatus());
     }
 }

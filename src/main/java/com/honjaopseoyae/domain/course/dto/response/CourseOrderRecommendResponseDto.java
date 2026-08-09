@@ -1,6 +1,6 @@
 package com.honjaopseoyae.domain.course.dto.response;
 
-import com.honjaopseoyae.domain.course.entity.OrderType;
+import com.honjaopseoyae.domain.course.entity.enums.OrderType;
 import lombok.Builder;
 import lombok.Getter;
 

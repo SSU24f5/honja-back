@@ -15,4 +15,5 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
 
     List<Place> findByContentTypeIn(List<Integer> contentTypes);
     List<Place> findAllByIndoor(boolean indoor);
+	Optional<Place> findByMapxAndMapyAndPlaceType(double mapx, double mapy, com.honjaopseoyae.domain.place.entity.PlaceType placeType);
 }

@@ -17,7 +17,7 @@ public class WebClientConfig {
 	public WebClient tourApiWebClient() {
 		String baseUrl = "https://apis.data.go.kr/B551011";
 		DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(baseUrl);
-		factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
+		factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.TEMPLATE_AND_VALUES);
 
 		return WebClient.builder()
 			.uriBuilderFactory(factory)
@@ -36,12 +36,15 @@ public class WebClientConfig {
 			.build();
 	}
 
-    @Bean
-    @Qualifier("kakaoLocalWebClient")
-    public WebClient kakaoLocalWebClient(@Value("${kakao.rest-api-key}") String restApiKey) {
-        return WebClient.builder()
-                .baseUrl("https://dapi.kakao.com")
-                .defaultHeader("Authorization", "KakaoAK " + restApiKey)
-                .build();
-    }
+	@Bean
+	@Qualifier("kakaoLocalWebClient")
+	public WebClient kakaoLocalWebClient(
+		@Value("${kakao.local.base-url}") String baseUrl,
+		@Value("${kakao.rest-api-key}") String apiKey
+	) {
+		return WebClient.builder()
+			.baseUrl(baseUrl)
+			.defaultHeader(HttpHeaders.AUTHORIZATION, "KakaoAK " + apiKey)
+			.build();
+	}
 }

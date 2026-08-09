@@ -9,6 +9,6 @@ public record TermResDTO(
         boolean isRequired
 ) {
     public static TermResDTO from(Term term) {
-        return new TermResDTO(term.getId(), term.getTitle(), term.getContent(), term.isAgreed());
+        return new TermResDTO(term.getId(), term.getTitle(), term.getContent(), term.isRequired());
     }
 }
