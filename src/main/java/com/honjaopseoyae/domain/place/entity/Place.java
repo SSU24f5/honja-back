@@ -44,9 +44,15 @@ public class Place extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PlaceType placeType;
 
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "indoor")
+    private boolean indoor; //true: 실내, false: 실외
+
     @Builder
     private Place(double mapx, double mapy, double tourMapx, double tourMapy, String image, boolean petPlace,
-                  boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType) {
+                  boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType, String title, boolean indoor) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.tourMapx = tourMapx == 0.0 ? mapx : tourMapx;
@@ -58,16 +64,19 @@ public class Place extends BaseEntity {
         this.contentType = contentType;
         this.cat3 = cat3;
         this.placeType = placeType;
+        this.title = title;
+        this.indoor = indoor;
     }
 
-    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType, String cat3) {
+    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType, String title, boolean indoor) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
         this.petPlace = petPlace;
         this.barrierFree = barrierFree;
         this.contentType = contentType;
-        this.cat3 = cat3;
+        this.title = title;
+        this.indoor = indoor;
     }
 
     public void updateCoordinates(double mapx, double mapy) {

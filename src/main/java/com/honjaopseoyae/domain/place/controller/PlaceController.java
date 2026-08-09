@@ -53,6 +53,12 @@ public class PlaceController {
 		return ApiResponse.onSuccess(response);
 	}
 
+    //장소 가져오기
+    @PostMapping("/sync")
+    public ApiResponse<String> syncTourPlaces() {
+        tourApiService.syncTourPlacesWithApi();
+        return ApiResponse.onSuccess("동기화 완료");
+    }
 	/** TourAPI KorService2/searchKeyword2 기반 키워드 검색 */
 	@GetMapping("/search/general")
 	public ApiResponse<List<TourCommonResponseDto>> searchPlaces(
