@@ -3,7 +3,7 @@ package com.honjaopseoyae.domain.course.entity.mapping;
 import java.time.LocalDate;
 
 import com.honjaopseoyae.domain.course.entity.Course;
-import com.honjaopseoyae.domain.course.entity.OrderType;
+import com.honjaopseoyae.domain.course.entity.enums.OrderType;
 import com.honjaopseoyae.domain.place.entity.Place;
 import com.honjaopseoyae.global.entity.BaseEntity;
 import jakarta.persistence.Column;

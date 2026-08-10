@@ -1,0 +1,35 @@
+spring:
+  config:
+    import: optional:application-secret.yml
+  datasource:
+    url: jdbc:mysql://localhost:3306/HON_DB
+    username: root
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
+kakao:
+  base-url: https://apis-navi.kakaomobility.com
+
+jwt:
+  token:
+    secret: ${jwt.secret-key}
+    expiration:
+      access: 3600000
+
+kma:
+  service-key: ${KMA_SERVICE_KEY}
+  base-url: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+
+airkorea:
+  service-key: ${AIRKOREA_SERVICE_KEY}
+  base-url: https://apis.data.go.kr/B552584/ArpltnInforInqireSvc
+  station-base-url: https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc

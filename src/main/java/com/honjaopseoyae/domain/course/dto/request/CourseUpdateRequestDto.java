@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.honjaopseoyae.domain.course.entity.OrderType;
+import com.honjaopseoyae.domain.course.entity.enums.OrderType;
 import com.honjaopseoyae.domain.place.entity.PlaceType;
 
 @Getter
@@ -49,7 +49,11 @@ public class CourseUpdateRequestDto {
 
 		private OrderType orderType;
 
+		private String title;
 		private String contentId;
+		private String contentTypeId;
+		private String cat3;
+		private String image;
 		private Boolean isPetPlace;
 		private Boolean isBarrierFree;
 		private String mapx;

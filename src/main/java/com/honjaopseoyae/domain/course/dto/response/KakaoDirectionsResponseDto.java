@@ -6,13 +6,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
+@ToString
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KakaoDirectionsResponseDto {
 	private List<Route> routes;
 
 	@Getter
+	@ToString
 	@NoArgsConstructor
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Route {
@@ -27,6 +31,7 @@ public class KakaoDirectionsResponseDto {
 	}
 
 	@Getter
+	@ToString
 	@NoArgsConstructor
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Summary {

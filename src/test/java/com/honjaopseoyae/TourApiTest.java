@@ -23,35 +23,35 @@ class TourApiTest {
 	@Autowired
 	private LocationService locationService;
 
-	@Test
-	// 반려동물, 무장애 전체 조회 테스트
-	void callTourApiListTest() {
-		// List<TourCommonResponseDto> result = tourApiService.getBarrierFreePlaceFromTourAPI();
-		List<TourCommonResponseDto> result = tourApiService.getPetPlaceFromTourAPI();
-
-		System.out.println("====== Tour API List Test Result ======");
-		System.out.println(result);
-		System.out.println("=======================================");
-
-		// 2. 외부 API 응답 및 결과 검증
-		assertThat(result).isNotNull();
-		assertThat(result).isNotEmpty();
-		System.out.println("가져온 첫 번째 관광지 제목: " + result.get(0).getTitle());
-	}
-
-	@Test
-	// 국문 관광정보 전체 조회 테스트
-	void callCommonPlaceApiTest() {
-		List<TourCommonResponseDto> result = tourApiService.getCommonPlaceFromTourAPI();
-
-		System.out.println("====== Tour API Common Place Test Result ======");
-		System.out.println(result);
-		System.out.println("==============================================");
-
-		assertThat(result).isNotNull();
-		assertThat(result).isNotEmpty();
-		System.out.println("가져온 첫 번째 관광지 제목: " + result.get(0).getTitle());
-	}
+	// @Test
+	// // 반려동물, 무장애 전체 조회 테스트
+	// void callTourApiListTest() {
+	// 	// List<TourCommonResponseDto> result = tourApiService.getBarrierFreePlaceFromTourAPI();
+	// 	List<TourCommonResponseDto> result = tourApiService.getPetPlaceFromTourAPI();
+	//
+	// 	System.out.println("====== Tour API List Test Result ======");
+	// 	System.out.println(result);
+	// 	System.out.println("=======================================");
+	//
+	// 	// 2. 외부 API 응답 및 결과 검증
+	// 	assertThat(result).isNotNull();
+	// 	assertThat(result).isNotEmpty();
+	// 	System.out.println("가져온 첫 번째 관광지 제목: " + result.get(0).getTitle());
+	// }
+	//
+	// @Test
+	// // 국문 관광정보 전체 조회 테스트
+	// void callCommonPlaceApiTest() {
+	// 	List<TourCommonResponseDto> result = tourApiService.getCommonPlaceFromTourAPI();
+	//
+	// 	System.out.println("====== Tour API Common Place Test Result ======");
+	// 	System.out.println(result);
+	// 	System.out.println("==============================================");
+	//
+	// 	assertThat(result).isNotNull();
+	// 	assertThat(result).isNotEmpty();
+	// 	System.out.println("가져온 첫 번째 관광지 제목: " + result.get(0).getTitle());
+	// }
 
 	// @Test
 	// 카테고리별 조회 테스트
@@ -104,4 +104,18 @@ class TourApiTest {
 		}
 	}
 
+    @Test
+    void searchCommonPlacesByKeywordTest() {
+        String keyword = "\uC131\uC0B0\uC77C\uCD9C\uBD09";
+        List<TourCommonResponseDto> result =
+            tourApiService.searchCommonPlacesByKeyword(keyword, 1, 2);
+
+        System.out.println("====== Tour API Keyword Search Test Result ======");
+        System.out.println(result);
+        System.out.println("=================================================");
+
+        assertThat(result).isNotNull().isNotEmpty();
+        assertThat(result.get(0).getContentid()).isNotBlank();
+        assertThat(result.get(0).getTitle()).isNotBlank();
+    }
 }

@@ -1,6 +1,7 @@
 package com.honjaopseoyae.domain.course.service;
 
 import com.honjaopseoyae.common.UserReader;
+import com.honjaopseoyae.config.KakaoLocalClient;
 import com.honjaopseoyae.config.KakaoMobilityClient;
 import com.honjaopseoyae.domain.course.dto.request.CourseCreateRequestDto;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
@@ -8,10 +9,15 @@ import com.honjaopseoyae.domain.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseListResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
+import com.honjaopseoyae.domain.course.entity.enums.CourseRole;
+import com.honjaopseoyae.domain.course.entity.enums.InviteStatus;
+import com.honjaopseoyae.domain.course.entity.mapping.CourseMember;
+import com.honjaopseoyae.domain.course.repository.CourseMemberRepository;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
 import com.honjaopseoyae.domain.course.entity.Course;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
+import com.honjaopseoyae.domain.course.support.CourseMemberValidator;
 import com.honjaopseoyae.domain.place.entity.Place;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.apipayload.domain.CourseErrorStatus;
@@ -20,7 +26,7 @@ import com.honjaopseoyae.domain.place.entity.PlaceType;
 import com.honjaopseoyae.domain.place.repository.PlaceRepository;
 import com.honjaopseoyae.domain.place.service.TourApiService;
 import com.honjaopseoyae.domain.course.support.CourseFinder;
-
+import java.util.TreeMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +35,10 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.TreeMap;
+import com.honjaopseoyae.domain.course.dto.request.CourseInviteRequestDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto;
+import com.honjaopseoyae.domain.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -40,15 +46,19 @@ import java.util.TreeMap;
 public class CourseServiceImpl implements CourseService {
     private final CourseFinder courseFinder;
     private final CourseRepository courseRepository;
+    private final CourseMemberRepository courseMemberRepository;
+    private final CourseMemberValidator courseMemberValidator;
     private final UserReader userReader;
     private final CoursePlaceRepository coursePlaceRepository;
     private final PlaceRepository placeRepository;
     private final TourApiService tourApiService;
     private final KakaoMobilityClient kakaoMobilityClient;
+    private final KakaoLocalClient kakaoLocalClient;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     @Override
-    public CourseDetailResponseDto getCourseDetail(Long courseId) {
+    public CourseDetailResponseDto getCourseDetail(Long courseId, Long userId) {
         Course course = courseFinder.findById(courseId);
 
         List<CoursePlace> coursePlaces =
@@ -81,48 +91,51 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseListResponseDto> getMyCourses(Long userId) {
         userReader.getById(userId);
 
-        return courseRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
+        return courseMemberRepository.findAllByUserIdAndStatus(userId, InviteStatus.ACCEPTED)
             .stream()
+            .map(CourseMember::getCourse)
+            .sorted(Comparator.comparing(Course::getCreatedAt).reversed())
             .map(CourseListResponseDto::from)
             .toList();
     }
 
     @Transactional
     @Override
-    public CourseCreateResponseDto createCourse(CourseCreateRequestDto requestDto) {
-        User user = userReader.getById(requestDto.getUserId());
-        Course course = CourseCreateRequestDto.toEntity(requestDto, user);
+    public CourseCreateResponseDto createCourse(CourseCreateRequestDto requestDto, Long userId) {
+        User user = userReader.getById(userId);
+        Course course = CourseCreateRequestDto.toEntity(requestDto);
         Course savedCourse = courseRepository.save(course);
+
+        CourseMember owner = CourseMember.builder()
+            .course(savedCourse)
+            .user(user)
+            .role(CourseRole.OWNER)
+            .status(InviteStatus.ACCEPTED)
+            .build();
+
+        courseMemberRepository.save(owner);
 
         return CourseCreateResponseDto.from(savedCourse);
     }
 
     @Transactional
     @Override
-    public CourseUpdateResponseDto updateCourse(CourseUpdateRequestDto requestDto) {
+    public CourseUpdateResponseDto updateCourse(CourseUpdateRequestDto requestDto, Long userId) {
         Course course = courseFinder.findById(requestDto.getCourseId());
+
+        courseMemberRepository.findByCourseIdAndUserIdAndStatus(course.getId(), userId, InviteStatus.ACCEPTED)
+            .orElseThrow(() -> new GeneralException(CourseErrorStatus.COURSE_NOT_WRITER));
 
         List<CoursePlace> existingCoursePlaces =
             coursePlaceRepository.findAllByCourseId(course.getId());
 
-        List<CourseUpdateRequestDto.CoursePlaceItem> incomingPlaces =
-            requestDto.getDates().stream()
-                .flatMap(dateItem -> dateItem.getPlaces().stream())
-                .toList();
-
-        deleteRemovedPlaces(existingCoursePlaces, incomingPlaces);
-
         List<CoursePlace> updatedCoursePlaces =
             requestDto.getDates().stream()
-                .flatMap(dateItem ->
-                    dateItem.getPlaces().stream()
-                        .map(item -> processCoursePlaceItem(
-                            course,
-                            dateItem.getDate(),
-                            item,
-                            existingCoursePlaces
-                        ))
-                )
+                .flatMap(dateItem -> updatePlacesForDate(
+                    course,
+                    dateItem,
+                    existingCoursePlaces
+                ).stream())
                 .toList();
 
         updateCoursePlaceRouteInfos(updatedCoursePlaces);
@@ -130,13 +143,40 @@ public class CourseServiceImpl implements CourseService {
         return buildUpdateResponse(course, updatedCoursePlaces);
     }
 
-    private void deleteRemovedPlaces(List<CoursePlace> existingPlaces, List<CourseUpdateRequestDto.CoursePlaceItem> incomingPlaces) {
-        Set<Long> incomingIds = incomingPlaces.stream()
+    /**
+     * A course update is scoped to one day.  Places belonging to other days
+     * must remain untouched; a place is never moved to another day by this API.
+     */
+    private List<CoursePlace> updatePlacesForDate(
+        Course course,
+        CourseUpdateRequestDto.CourseDateItem dateItem,
+        List<CoursePlace> existingPlaces
+    ) {
+        List<CoursePlace> existingPlacesForDate = existingPlaces.stream()
+            .filter(coursePlace -> dateItem.getDate().equals(coursePlace.getDate()))
+            .toList();
+
+        deleteRemovedPlacesForDate(existingPlacesForDate, dateItem.getPlaces());
+
+        return dateItem.getPlaces().stream()
+            .map(item -> processCoursePlaceItem(
+                course,
+                dateItem.getDate(),
+                item,
+                existingPlacesForDate
+            ))
+            .toList();
+    }
+
+    private void deleteRemovedPlacesForDate(
+        List<CoursePlace> existingPlacesForDate, List<CourseUpdateRequestDto.CoursePlaceItem> incomingPlaces
+    ) {
+        var incomingIds = incomingPlaces.stream()
                 .map(CourseUpdateRequestDto.CoursePlaceItem::getCoursePlaceId)
-                .filter(Objects::nonNull)
+                .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        List<CoursePlace> toDelete = existingPlaces.stream()
+        List<CoursePlace> toDelete = existingPlacesForDate.stream()
                 .filter(cp -> !incomingIds.contains(cp.getId()))
                 .collect(Collectors.toList());
 
@@ -256,15 +296,24 @@ public class CourseServiceImpl implements CourseService {
     private Place createIndividualPlace(
         CourseUpdateRequestDto.CoursePlaceItem item
     ) {
-        return placeRepository.save(
-            Place.builder()
-                .mapx(parseDouble(item.getMapx()))
-                .mapy(parseDouble(item.getMapy()))
-                .placeType(PlaceType.INDIVIDUAL_PLACE)
-                .petPlace(false)
-                .barrierFree(false)
-                .build()
-        );
+        double rawMapx = parseDouble(item.getMapx());
+        double rawMapy = parseDouble(item.getMapy());
+
+        return placeRepository.findByMapxAndMapyAndPlaceType(rawMapx, rawMapy, PlaceType.INDIVIDUAL_PLACE)
+            .orElseGet(() -> placeRepository.save(
+                Place.builder()
+                    .mapx(rawMapx)
+                    .mapy(rawMapy)
+                    .tourMapx(rawMapx)
+                    .tourMapy(rawMapy)
+                    .image(item.getImage())
+                    .contentType(parseContentType(item.getContentTypeId()))
+                    .cat3(item.getCat3())
+                    .placeType(PlaceType.INDIVIDUAL_PLACE)
+                    .petPlace(false)
+                    .barrierFree(false)
+                    .build()
+            ));
     }
 
 
@@ -277,12 +326,31 @@ public class CourseServiceImpl implements CourseService {
                 tourApiService.getPetDetailInfo(Long.parseLong(item.getContentId()));
             }
 
+            double rawMapx = parseDouble(item.getMapx());
+            double rawMapy = parseDouble(item.getMapy());
+            double kakaoMapx = rawMapx;
+            double kakaoMapy = rawMapy;
+
+            if (item.getTitle() != null && !item.getTitle().isBlank() && kakaoLocalClient != null) {
+                KakaoLocalClient.RoadCoordinate road = kakaoLocalClient.searchKeyword(item.getTitle());
+                if (road != null) {
+                    kakaoMapx = road.x();
+                    kakaoMapy = road.y();
+                }
+            }
+
             Place newPlace = Place.builder()
                     .contentId(item.getContentId())
+                    .contentType(parseContentType(item.getContentTypeId()))
+                    .cat3(item.getCat3())
+                    .image(item.getImage())
+                    .placeType(item.getPlaceType() != null ? item.getPlaceType() : PlaceType.TOUR_PLACE)
                     .petPlace(Boolean.TRUE.equals(item.getIsPetPlace()))
                     .barrierFree(Boolean.TRUE.equals(item.getIsBarrierFree()))
-                    .mapx(parseDouble(item.getMapx()))
-                    .mapy(parseDouble(item.getMapy()))
+                    .mapx(kakaoMapx)
+                    .mapy(kakaoMapy)
+                    .tourMapx(rawMapx)
+                    .tourMapy(rawMapy)
                     .build();
 
             return placeRepository.save(newPlace);
@@ -329,9 +397,14 @@ public class CourseServiceImpl implements CourseService {
     public void deleteCourse(Long courseId, Long userId) {
         Course course = courseFinder.findById(courseId);
 
-        if (course.getUser() == null || !course.getUser().getId().equals(userId)) {
-            throw new GeneralException(CourseErrorStatus.COURSE_NOT_WRITER);
-        }
+        courseMemberRepository.findByCourseIdAndUserIdAndRoleAndStatus(
+                courseId,
+                userId,
+                CourseRole.OWNER,
+                InviteStatus.ACCEPTED
+            )
+            .orElseThrow(() ->
+                new GeneralException(CourseErrorStatus.COURSE_NOT_WRITER));
 
         courseRepository.delete(course);
     }
@@ -347,11 +420,85 @@ public class CourseServiceImpl implements CourseService {
         }
     }
 
+    private Integer parseContentType(String contentTypeId) {
+        if (contentTypeId == null || contentTypeId.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(contentTypeId.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     private String toKilometers(int distanceMeters) {
         return String.format(Locale.US, "%.1f", distanceMeters / 1000.0);
     }
 
     private String toMinutes(int durationSeconds) {
         return String.valueOf((int) Math.ceil(durationSeconds / 60.0));
+    }
+
+    @Override
+    public void inviteMemberByEmail(CourseInviteRequestDto requestDto, Long currentUserId) {
+        Course course = courseFinder.findById(requestDto.getCourseId());
+
+        courseMemberValidator.validateCourseAccess(course.getId(), currentUserId);
+
+        User targetUser = userReader.getByEmail(requestDto.getEmail());
+
+        if (targetUser.getId().equals(currentUserId)) {
+            throw new GeneralException(CourseErrorStatus.CANNOT_INVITE_SELF);
+        }
+
+        courseMemberRepository.findByCourseIdAndUserId(course.getId(), targetUser.getId())
+            .ifPresent(cm -> {
+                throw new GeneralException(CourseErrorStatus.ALREADY_INVITED_OR_MEMBER);
+            });
+
+        CourseMember invitation = CourseMember.builder()
+            .course(course)
+            .user(targetUser)
+            .role(CourseRole.MEMBER)
+            .status(InviteStatus.PENDING)
+            .build();
+
+        courseMemberRepository.save(invitation);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CourseInvitationResponseDto> getMyInvitations(Long currentUserId) {
+        return courseMemberRepository.findMyInvitationsWithOwner(currentUserId, CourseRole.OWNER, InviteStatus.PENDING);
+    }
+
+    @Override
+    public void acceptInvitation(Long courseMemberId, Long currentUserId) {
+        CourseMember courseMember = courseMemberValidator.validateExistingCourseMember(courseMemberId);
+
+        if (!courseMember.getUser().getId().equals(currentUserId)) {
+            throw new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED);
+        }
+
+        if (courseMember.getStatus() != InviteStatus.PENDING) {
+            throw new GeneralException(CourseErrorStatus.INVALID_INVITATION_STATUS);
+        }
+
+        courseMember.accept();
+    }
+
+    @Override
+    public void rejectInvitation(Long courseMemberId, Long currentUserId) {
+        CourseMember courseMember = courseMemberValidator.validateExistingCourseMember(courseMemberId);
+
+        if (!courseMember.getUser().getId().equals(currentUserId)) {
+            throw new GeneralException(CourseErrorStatus.COURSE_ACCESS_DENIED);
+        }
+
+        if (courseMember.getStatus() != InviteStatus.PENDING) {
+            throw new GeneralException(CourseErrorStatus.INVALID_INVITATION_STATUS);
+        }
+
+        courseMember.reject();
     }
 }

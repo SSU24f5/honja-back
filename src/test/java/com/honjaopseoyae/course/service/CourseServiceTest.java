@@ -16,9 +16,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
+import com.honjaopseoyae.domain.course.entity.enums.CourseRole;
+import com.honjaopseoyae.domain.course.entity.enums.InviteStatus;
+import com.honjaopseoyae.domain.course.entity.mapping.CourseMember;
+import com.honjaopseoyae.domain.course.repository.CourseMemberRepository;
 import com.honjaopseoyae.domain.course.repository.CoursePlaceRepository;
 import com.honjaopseoyae.domain.course.repository.CourseRepository;
-import com.honjaopseoyae.domain.course.entity.CourseType;
+import com.honjaopseoyae.domain.course.entity.enums.CourseType;
 import com.honjaopseoyae.domain.course.entity.Course;
 import com.honjaopseoyae.domain.course.entity.mapping.CoursePlace;
 import com.honjaopseoyae.domain.course.service.CourseService;
@@ -36,6 +40,9 @@ class CourseServiceTest {
 
 	@Autowired
 	private CourseRepository courseRepository;
+
+	@Autowired
+	private CourseMemberRepository courseMemberRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -64,16 +71,22 @@ class CourseServiceTest {
 
 		// 테스트용 코스 생성 및 저장
 		testCourse = Course.builder()
-				.user(testUser)
 				.name("테스트 코스")
 				.description("테스트 설명")
 				.isPublic(true)
-				.isExternal(true)
 				.startDate(LocalDate.now())
 				.endDate(LocalDate.now().plusDays(1))
 				.courseType(CourseType.GENERAL)
 				.build();
 		courseRepository.save(testCourse);
+
+		CourseMember owner = CourseMember.builder()
+				.course(testCourse)
+				.user(testUser)
+				.role(com.honjaopseoyae.domain.course.entity.enums.CourseRole.OWNER)
+				.status(com.honjaopseoyae.domain.course.entity.enums.InviteStatus.ACCEPTED)
+				.build();
+		courseMemberRepository.save(owner);
 
 		// 서울시청 부근 장소 1
 		place1 = Place.builder()
@@ -107,6 +120,8 @@ class CourseServiceTest {
 				.build();
 		coursePlaceRepository.save(existingCoursePlace);
 
+		User user = testUser;
+
 		// DTO 설정
 		CourseUpdateRequestDto requestDto = new CourseUpdateRequestDto();
 		ReflectionTestUtils.setField(requestDto, "courseId", testCourse.getId());
@@ -132,7 +147,7 @@ class CourseServiceTest {
 		ReflectionTestUtils.setField(requestDto, "dates", List.of(dateItem));
 
 		// When
-		CourseUpdateResponseDto response = courseService.updateCourse(requestDto);
+		CourseUpdateResponseDto response = courseService.updateCourse(requestDto, testUser.getId());
 
 		// Then
 		assertThat(response).isNotNull();
@@ -187,7 +202,7 @@ class CourseServiceTest {
 		coursePlaceRepository.save(cp2);
 
 		// When
-		CourseDetailResponseDto detail = courseService.getCourseDetail(testCourse.getId());
+		CourseDetailResponseDto detail = courseService.getCourseDetail(testCourse.getId(), testUser.getId());
 
 		//Then
 	}

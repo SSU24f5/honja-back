@@ -7,14 +7,17 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.honjaopseoyae.domain.place.util.IndoorOutdoorClassifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.honjaopseoyae.config.KakaoLocalClient;
 import com.honjaopseoyae.domain.place.client.TourApiClient;
 import com.honjaopseoyae.domain.place.converter.TourPlaceConverter;
 import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.domain.place.dto.request.AreaBaseTourRequestDto;
+import com.honjaopseoyae.domain.place.dto.request.KeywordSearchTourRequestDto;
 import com.honjaopseoyae.domain.place.dto.request.PlaceDetailRequestDto;
 import com.honjaopseoyae.domain.place.dto.response.DetailAccessibilityDto;
 import com.honjaopseoyae.domain.place.dto.response.PetDetailResponseDto;
@@ -39,6 +42,8 @@ public class TourApiServiceImpl implements TourApiService {
 
 	private final TourApiClient tourApiClient;
 	private final PlaceRepository placeRepository;
+  private final IndoorOutdoorClassifier indoorOutdoorClassifier;
+	private final KakaoLocalClient kakaoLocalClient;
 
 	@Override
 	public TourApiCommonResponse<List<DetailAccessibilityDto>> getBarrierFreeInfo(Long contentId) {
@@ -87,6 +92,17 @@ public class TourApiServiceImpl implements TourApiService {
 
 		return fetchPlaces(BARRIER_FREE_PATH, requestDto);
 	}
+
+    @Override
+    public List<Place> findNearby(double lat, double lon, boolean indoor, double radiusKm, int limit) {
+        return placeRepository.findAllByIndoor(indoor).stream()
+                .map(place -> Map.entry(place, haversine(lat, lon, place.getMapy(), place.getMapx())))
+                .filter(entry -> entry.getValue() <= radiusKm)
+                .sorted(Map.Entry.comparingByValue())
+                .limit(limit)
+                .map(Map.Entry::getKey)
+                .toList();
+    }
 
 	@Transactional
 	@Override
@@ -137,13 +153,15 @@ public class TourApiServiceImpl implements TourApiService {
 
 			Place localPlace = localPlaceMap.get(dto.getContentid());
 
-			if (localPlace == null) {
-				saveList.add(dto.toEntity(false, true));
-				continue;
-			}
+    if (localPlace == null) {
+                    Place newPlace = dto.toEntity(false, true, indoorOutdoorClassifier);
+                    refineCoordinatesWithKakaoLocal(newPlace, dto.getTitle());
+                    saveList.add(newPlace);
+                    continue;
+                }
 
-			updatePlaceIfChanged(localPlace, dto, saveList);
-		}
+          updatePlaceIfChanged(localPlace, dto, saveList);
+        }
 
 		if (saveList.isEmpty()) {
 			log.info("변경사항이 없습니다. 로컬 DB가 최신 상태입니다.");
@@ -152,6 +170,16 @@ public class TourApiServiceImpl implements TourApiService {
 
 		placeRepository.saveAll(saveList);
 		log.info("로컬 DB 동기화 완료! 추가/수정된 데이터 수: {}개", saveList.size());
+	}
+
+	private void refineCoordinatesWithKakaoLocal(Place place, String title) {
+		if (title == null || title.isBlank() || kakaoLocalClient == null) {
+			return;
+		}
+		KakaoLocalClient.RoadCoordinate roadCoord = kakaoLocalClient.searchKeyword(title);
+		if (roadCoord != null) {
+			place.updateCoordinates(roadCoord.x(), roadCoord.y());
+		}
 	}
 
 	private List<TourCommonResponseDto> fetchPlaces(String path, AreaBaseTourRequestDto requestDto) {
@@ -174,20 +202,24 @@ public class TourApiServiceImpl implements TourApiService {
 		return response.getResponse().getBody().getItems().getItem();
 	}
 
-	private void updatePlaceIfChanged(Place place, TourPlaceDto dto, List<Place> saveList) {
+private void updatePlaceIfChanged(Place place, TourPlaceDto dto, List<Place> saveList) {
 		double mapx = parseDouble(dto.getMapx());
 		double mapy = parseDouble(dto.getMapy());
 		String image = dto.getFirstimage();
 		Integer contentType = parseContentType(dto.getContenttypeid());
+		String cat3 = dto.getCat3();
+		String title = dto.getTitle();
+		boolean indoor = indoorOutdoorClassifier.isIndoor(title);
 
 		boolean isPetPlace = place.isPetPlace();
 		boolean isBarrierFree = true;
 
-		if (!isPlaceChanged(place, mapx, mapy, image, contentType, isPetPlace, isBarrierFree)) {
+		if (!isPlaceChanged(place, mapx, mapy, image, contentType, cat3, isPetPlace, isBarrierFree, title, indoor)) {
 			return;
 		}
 
-		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType);
+		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType, title, indoor);
+		refineCoordinatesWithKakaoLocal(place, dto.getTitle());
 		saveList.add(place);
 	}
 
@@ -197,25 +229,28 @@ public class TourApiServiceImpl implements TourApiService {
 		double mapy,
 		String image,
 		Integer contentType,
+		String cat3,
 		boolean isPetPlace,
-		boolean isBarrierFree
+		boolean isBarrierFree,
+		String title,
+		boolean indoor
 	) {
-		return Double.compare(place.getMapx(), mapx) != 0
-			|| Double.compare(place.getMapy(), mapy) != 0
+		return Double.compare(place.getTourMapx(), mapx) != 0
+			|| Double.compare(place.getTourMapy(), mapy) != 0
 			|| !Objects.equals(place.getImage(), image)
 			|| !Objects.equals(place.getContentType(), contentType)
+			|| !Objects.equals(place.getCat3(), cat3)
 			|| place.isPetPlace() != isPetPlace
-			|| place.isBarrierFree() != isBarrierFree;
+			|| place.isBarrierFree() != isBarrierFree
+			|| !Objects.equals(place.getTitle(), title)
+			|| place.isIndoor() != indoor;
 	}
-
 	private PlaceDetailRequestDto createDetailRequest(Long contentId) {
 		return PlaceDetailRequestDto.builder()
 			.contentId(contentId.toString())
 			.mobileApp("HonjaOpseoYae")
 			.build();
 	}
-
-
 
 	private double parseDouble(String value) {
 		if (value == null || value.isBlank()) {
@@ -239,5 +274,47 @@ public class TourApiServiceImpl implements TourApiService {
 		} catch (NumberFormatException e) {
 			return null;
 		}
+	}
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon/2) * Math.sin(dLon/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+	@Override
+	public List<TourCommonResponseDto> searchCommonPlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows) {
+		return fetchKeywordPlaces("/KorService2/searchKeyword2", keyword, pageNo, numOfRows);
+	}
+
+	@Override
+	public List<TourCommonResponseDto> searchBarrierFreePlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows) {
+		return fetchKeywordPlaces("/KorWithService2/searchKeyword2", keyword, pageNo, numOfRows);
+	}
+
+	@Override
+	public List<TourCommonResponseDto> searchPetPlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows) {
+		return fetchKeywordPlaces("/KorPetTourService2/searchKeyword2", keyword, pageNo, numOfRows);
+	}
+
+	private List<TourCommonResponseDto> fetchKeywordPlaces(String path, String keyword, Integer pageNo, Integer numOfRows) {
+		KeywordSearchTourRequestDto requestDto =
+			KeywordSearchTourRequestDto.builder()
+				.keyword(keyword)
+				.pageNo(pageNo != null ? pageNo : 1)
+				.numOfRows(numOfRows != null ? numOfRows : 10)
+				.areaCode("39")
+				.build();
+
+		TourApiCommonResponse<List<TourPlaceDto>> response = tourApiClient.getKeywordPlaces(path, requestDto);
+
+		List<TourPlaceDto> dtos = extractItems(response);
+		return dtos.stream()
+			.map(TourPlaceDto::toCommonResponseDto)
+			.collect(Collectors.toList());
 	}
 }
