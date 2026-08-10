@@ -52,7 +52,8 @@ public class Place extends BaseEntity {
 
     @Builder
     private Place(double mapx, double mapy, double tourMapx, double tourMapy, String image, boolean petPlace,
-                  boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType, String title, boolean indoor) {
+        boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType, String title,
+        boolean indoor) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.tourMapx = tourMapx == 0.0 ? mapx : tourMapx;
@@ -68,7 +69,8 @@ public class Place extends BaseEntity {
         this.indoor = indoor;
     }
 
-    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType, String title, boolean indoor) {
+    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree,
+        Integer contentType, String title, boolean indoor) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
@@ -77,6 +79,14 @@ public class Place extends BaseEntity {
         this.contentType = contentType;
         this.title = title;
         this.indoor = indoor;
+    }
+
+    public double getLat() {
+        return this.mapy;
+    }
+
+    public double getLng() {
+        return this.mapx;
     }
 
     public void updateCoordinates(double mapx, double mapy) {
