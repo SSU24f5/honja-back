@@ -72,6 +72,7 @@ public class CourseDetailResponseDto {
 		private String timeTaken;
 
 		private String contentId;
+		private String title;
 		private double mapx;
 		private double mapy;
 		private boolean petPlace;
@@ -91,6 +92,7 @@ public class CourseDetailResponseDto {
 				.distance(coursePlace.getDistance())
 				.timeTaken(coursePlace.getTimeTaken())
 				.contentId(place != null ? place.getContentId() : null)
+				.title(place != null ? place.getTitle() : null)
 				.mapx(place != null ? place.getMapx() : 0.0)
 				.mapy(place != null ? place.getMapy() : 0.0)
 				.petPlace(place != null && place.isPetPlace())

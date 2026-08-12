@@ -2,7 +2,6 @@ package com.honjaopseoyae.config;
 
 
 import com.honjaopseoyae.domain.course.dto.response.KakaoCoord2AddressResponseDto;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -10,11 +9,23 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class KakaoLocalClient {
+	private static final String BRACKETED_DESCRIPTION_REGEX =
+		"(?s)\\([^()]*\\)|\\[[^\\[\\]]*\\]|\\{[^{}]*\\}|<[^<>]*>"
+			+ "|\\x{FF08}[^\\x{FF08}\\x{FF09}]*\\x{FF09}"  // （...）
+			+ "|\\x{FF3B}[^\\x{FF3B}\\x{FF3D}]*\\x{FF3D}"  // ［...］
+			+ "|\\x{FF5B}[^\\x{FF5B}\\x{FF5D}]*\\x{FF5D}"  // ｛...｝
+			+ "|\\x{3008}[^\\x{3008}\\x{3009}]*\\x{3009}"  // 〈...〉
+			+ "|\\x{300A}[^\\x{300A}\\x{300B}]*\\x{300B}"  // 《...》
+			+ "|\\x{3010}[^\\x{3010}\\x{3011}]*\\x{3011}"; // 【...】
 
-	@Qualifier("kakaoLocalWebClient")
 	private final WebClient kakaoLocalWebClient;
+
+	public KakaoLocalClient(
+		@Qualifier("kakaoLocalWebClient") WebClient kakaoLocalWebClient
+	) {
+		this.kakaoLocalWebClient = kakaoLocalWebClient;
+	}
 
 	public RoadCoordinate getNearestRoad(double mapx, double mapy) {
 
@@ -70,23 +81,26 @@ public class KakaoLocalClient {
 		if (query == null || query.isBlank()) {
 			return null;
 		}
+		String normalizedQuery = normalizeKeyword(query);
 
 		try {
 			com.honjaopseoyae.domain.course.dto.response.KakaoSearchKeywordResponseDto response = kakaoLocalWebClient.get()
 				.uri(uriBuilder -> uriBuilder
 					.path("/v2/local/search/keyword.json")
-					.queryParam("query", query)
+					.queryParam("query", normalizedQuery)
 					.build())
 				.retrieve()
 				.bodyToMono(com.honjaopseoyae.domain.course.dto.response.KakaoSearchKeywordResponseDto.class)
 				.onErrorResume(e -> {
-					log.warn("Kakao Local searchKeyword failed for query: {}", query, e);
+					log.warn("Kakao Local searchKeyword failed. originalQuery={}, normalizedQuery={}",
+						query, normalizedQuery, e);
 					return reactor.core.publisher.Mono.empty();
 				})
 				.block();
 
 			if (response == null || response.getDocuments() == null || response.getDocuments().isEmpty()) {
-				log.info("searchKeyword empty result for query: {}", query);
+				log.info("Kakao Local searchKeyword empty result. originalQuery={}, normalizedQuery={}",
+					query, normalizedQuery);
 				return null;
 			}
 
@@ -103,9 +117,25 @@ public class KakaoLocalClient {
 				Double.parseDouble(yStr)
 			);
 		} catch (Exception e) {
-			log.error("Exception in searchKeyword for query: {}", query, e);
+			log.error("Exception in Kakao Local searchKeyword. originalQuery={}, normalizedQuery={}",
+				query, normalizedQuery, e);
 			return null;
 		}
+	}
+
+	static String normalizeKeyword(String query) {
+		String normalized = query;
+		String previous;
+		do {
+			previous = normalized;
+			normalized = normalized.replaceAll(BRACKETED_DESCRIPTION_REGEX, " ");
+		} while (!normalized.equals(previous));
+
+		normalized = normalized
+			.replaceAll("\\s+", " ")
+			.trim();
+
+		return normalized.isBlank() ? query.trim() : normalized;
 	}
 
 	public record RoadCoordinate(

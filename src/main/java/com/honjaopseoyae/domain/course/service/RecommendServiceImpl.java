@@ -154,6 +154,7 @@ public class RecommendServiceImpl implements RecommendService {
 				.distance(segment.distance())
 				.timeTaken(segment.timeTaken())
 				.contentId(place.getContentId())
+				.title(place.getTitle())
 				.mapx(place.getMapx())
 				.mapy(place.getMapy())
 				.petPlace(place.isPetPlace())

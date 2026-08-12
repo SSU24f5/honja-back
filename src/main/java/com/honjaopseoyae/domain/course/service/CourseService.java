@@ -25,6 +25,8 @@ public interface CourseService {
 
 	List<com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto> getMyInvitations(Long currentUserId);
 
+	boolean hasPendingInvitations(Long currentUserId);
+
 	void acceptInvitation(Long courseMemberId, Long currentUserId);
 
 	void rejectInvitation(Long courseMemberId, Long currentUserId);

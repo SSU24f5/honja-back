@@ -28,6 +28,7 @@ import com.honjaopseoyae.domain.place.service.TourApiService;
 import com.honjaopseoyae.domain.course.support.CourseFinder;
 import java.util.TreeMap;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ import com.honjaopseoyae.domain.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class CourseServiceImpl implements CourseService {
     private final CourseFinder courseFinder;
@@ -302,6 +304,7 @@ public class CourseServiceImpl implements CourseService {
         return placeRepository.findByMapxAndMapyAndPlaceType(rawMapx, rawMapy, PlaceType.INDIVIDUAL_PLACE)
             .orElseGet(() -> placeRepository.save(
                 Place.builder()
+                    .title(item.getTitle())
                     .mapx(rawMapx)
                     .mapy(rawMapy)
                     .tourMapx(rawMapx)
@@ -318,6 +321,9 @@ public class CourseServiceImpl implements CourseService {
 
 
     private Place fetchAndSavePlaceFromApi(CourseUpdateRequestDto.CoursePlaceItem item) {
+        double rawMapx = parseDouble(item.getMapx());
+        double rawMapy = parseDouble(item.getMapy());
+
         try {
             if (Boolean.TRUE.equals(item.getIsBarrierFree())) {
                 tourApiService.getBarrierFreeInfo(Long.parseLong(item.getContentId()));
@@ -325,38 +331,38 @@ public class CourseServiceImpl implements CourseService {
             if (Boolean.TRUE.equals(item.getIsPetPlace())) {
                 tourApiService.getPetDetailInfo(Long.parseLong(item.getContentId()));
             }
-
-            double rawMapx = parseDouble(item.getMapx());
-            double rawMapy = parseDouble(item.getMapy());
-            double kakaoMapx = rawMapx;
-            double kakaoMapy = rawMapy;
-
-            if (item.getTitle() != null && !item.getTitle().isBlank() && kakaoLocalClient != null) {
-                KakaoLocalClient.RoadCoordinate road = kakaoLocalClient.searchKeyword(item.getTitle());
-                if (road != null) {
-                    kakaoMapx = road.x();
-                    kakaoMapy = road.y();
-                }
-            }
-
-            Place newPlace = Place.builder()
-                    .contentId(item.getContentId())
-                    .contentType(parseContentType(item.getContentTypeId()))
-                    .cat3(item.getCat3())
-                    .image(item.getImage())
-                    .placeType(item.getPlaceType() != null ? item.getPlaceType() : PlaceType.TOUR_PLACE)
-                    .petPlace(Boolean.TRUE.equals(item.getIsPetPlace()))
-                    .barrierFree(Boolean.TRUE.equals(item.getIsBarrierFree()))
-                    .mapx(kakaoMapx)
-                    .mapy(kakaoMapy)
-                    .tourMapx(rawMapx)
-                    .tourMapy(rawMapy)
-                    .build();
-
-            return placeRepository.save(newPlace);
         } catch (Exception e) {
-            return null;
+            // 부가 상세 조회 실패는 장소 저장을 막지 않는다.
+            log.warn("Tour API detail lookup failed; saving place with source coordinates. contentId={}",
+                item.getContentId(), e);
         }
+
+        double mapx = rawMapx;
+        double mapy = rawMapy;
+        if (item.getTitle() != null && !item.getTitle().isBlank() && kakaoLocalClient != null) {
+            KakaoLocalClient.RoadCoordinate road = kakaoLocalClient.searchKeyword(item.getTitle());
+            if (road != null) {
+                mapx = road.x();
+                mapy = road.y();
+            }
+        }
+
+        Place newPlace = Place.builder()
+                .title(item.getTitle())
+                .contentId(item.getContentId())
+                .contentType(parseContentType(item.getContentTypeId()))
+                .cat3(item.getCat3())
+                .image(item.getImage())
+                .placeType(item.getPlaceType() != null ? item.getPlaceType() : PlaceType.TOUR_PLACE)
+                .petPlace(Boolean.TRUE.equals(item.getIsPetPlace()))
+                .barrierFree(Boolean.TRUE.equals(item.getIsBarrierFree()))
+                .mapx(mapx)
+                .mapy(mapy)
+                .tourMapx(rawMapx)
+                .tourMapy(rawMapy)
+                .build();
+
+        return placeRepository.save(newPlace);
     }
 
     private CourseUpdateResponseDto buildUpdateResponse(
@@ -411,12 +417,16 @@ public class CourseServiceImpl implements CourseService {
 
     private double parseDouble(String value) {
         if (value == null || value.trim().isEmpty()) {
-            return 0.0;
+            throw new GeneralException(CourseErrorStatus.PLACE_NOT_FOUND);
         }
         try {
-            return Double.parseDouble(value.trim());
+            double coordinate = Double.parseDouble(value.trim());
+            if (!Double.isFinite(coordinate)) {
+                throw new GeneralException(CourseErrorStatus.PLACE_NOT_FOUND);
+            }
+            return coordinate;
         } catch (NumberFormatException e) {
-            return 0.0;
+            throw new GeneralException(CourseErrorStatus.PLACE_NOT_FOUND);
         }
     }
 
@@ -470,6 +480,12 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<CourseInvitationResponseDto> getMyInvitations(Long currentUserId) {
         return courseMemberRepository.findMyInvitationsWithOwner(currentUserId, CourseRole.OWNER, InviteStatus.PENDING);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public boolean hasPendingInvitations(Long currentUserId) {
+        return courseMemberRepository.existsByUserIdAndStatus(currentUserId, InviteStatus.PENDING);
     }
 
     @Override

@@ -11,6 +11,14 @@ class KakaoLocalClientTest {
 
 	private KakaoLocalClient kakaoLocalClient;
 
+	@Test
+	void normalizeKeyword_removesDescriptionsInSupportedBrackets() {
+		String original = "\uc131\uc0b0\uc77c\ucd9c\ubd09 [\uc720\ub124\uc2a4\ucf54] (\uc81c\uc8fc) {\uad00\uad11} <\ucd94\ucc9c> \uff08\ubcf4\uc870\uff09 \u3010\uc548\ub0b4\u3011";
+
+		assertThat(KakaoLocalClient.normalizeKeyword(original))
+			.isEqualTo("\uc131\uc0b0\uc77c\ucd9c\ubd09");
+	}
+
 	@BeforeEach
 	void setUp() {
 		String baseUrl = "https://dapi.kakao.com";

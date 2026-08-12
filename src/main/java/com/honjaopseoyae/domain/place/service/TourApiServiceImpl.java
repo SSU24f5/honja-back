@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import com.honjaopseoyae.domain.place.util.IndoorOutdoorClassifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -42,8 +41,8 @@ public class TourApiServiceImpl implements TourApiService {
 
 	private final TourApiClient tourApiClient;
 	private final PlaceRepository placeRepository;
-  private final IndoorOutdoorClassifier indoorOutdoorClassifier;
 	private final KakaoLocalClient kakaoLocalClient;
+	private final IndoorOutdoorClassifier indoorOutdoorClassifier;
 
 	@Override
 	public TourApiCommonResponse<List<DetailAccessibilityDto>> getBarrierFreeInfo(Long contentId) {
@@ -218,7 +217,7 @@ private void updatePlaceIfChanged(Place place, TourPlaceDto dto, List<Place> sav
 			return;
 		}
 
-		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType, title, indoor);
+		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType,title, indoor, cat3);
 		refineCoordinatesWithKakaoLocal(place, dto.getTitle());
 		saveList.add(place);
 	}

@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place extends BaseEntity {
 
+
     private double mapx;                  // 경도 (kakao_x / 길찾기 정제 좌표)
 
     private double mapy;                  // 위도 (kakao_y / 길찾기 정제 좌표)
@@ -70,7 +71,8 @@ public class Place extends BaseEntity {
     }
 
     public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree,
-        Integer contentType, String title, boolean indoor) {
+        Integer contentType, String title, boolean indoor, String cat3) {
+        this.title = title;
         this.mapx = mapx;
         this.mapy = mapy;
         this.image = image;
@@ -79,6 +81,7 @@ public class Place extends BaseEntity {
         this.contentType = contentType;
         this.title = title;
         this.indoor = indoor;
+        this.cat3 = cat3;
     }
 
     public double getLat() {

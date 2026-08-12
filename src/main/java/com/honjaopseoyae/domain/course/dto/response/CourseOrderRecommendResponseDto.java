@@ -35,6 +35,7 @@ public class CourseOrderRecommendResponseDto {
 		private String timeTaken;
 
 		private String contentId;
+		private String title;
 		private double mapx;
 		private double mapy;
 		private boolean petPlace;

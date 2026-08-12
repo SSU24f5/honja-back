@@ -53,6 +53,7 @@ public class TourPlaceDto {
 		double rawMapy = parseDouble(mapy);
 
 		return Place.builder()
+			.title(title)
 			.contentId(contentid)
 			.contentType(parseContentType(contenttypeid))
 			.cat3(cat3)

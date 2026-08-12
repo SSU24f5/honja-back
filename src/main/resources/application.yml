@@ -24,6 +24,9 @@ jwt:
     secret: ${jwt.secret-key}
     expiration:
       access: 3600000
+server:
+  address: 0.0.0.0
+  port: 8080
 
 kma:
   service-key: ${KMA_SERVICE_KEY}
