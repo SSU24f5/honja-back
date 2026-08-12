@@ -6,6 +6,7 @@ import com.honjaopseoyae.domain.place.dto.common.TourApiCommonResponse;
 import com.honjaopseoyae.domain.place.dto.response.DetailAccessibilityDto;
 import com.honjaopseoyae.domain.place.dto.response.PetDetailResponseDto;
 import com.honjaopseoyae.domain.place.dto.response.TourCommonResponseDto;
+import com.honjaopseoyae.domain.place.entity.Place;
 
 public interface TourApiService {
 	TourApiCommonResponse<List<DetailAccessibilityDto>> getBarrierFreeInfo(Long contentId);
@@ -18,6 +19,7 @@ public interface TourApiService {
 
 	List<TourCommonResponseDto> getCommonPlaceFromTourAPI();
 
+    List<Place> findNearby(double lat, double lon, boolean indoor, double radiusKm, int limit);
 	void syncTourPlacesWithApi();
 
 	List<TourCommonResponseDto> searchCommonPlacesByKeyword(String keyword, Integer pageNo, Integer numOfRows);

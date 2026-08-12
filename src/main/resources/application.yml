@@ -16,6 +16,9 @@ spring:
         format_sql: true
 
 
+kakao:
+  base-url: https://apis-navi.kakaomobility.com
+
 jwt:
   token:
     secret: ${jwt.secret-key}
@@ -24,3 +27,12 @@ jwt:
 server:
   address: 0.0.0.0
   port: 8080
+
+kma:
+  service-key: ${KMA_SERVICE_KEY}
+  base-url: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+
+airkorea:
+  service-key: ${AIRKOREA_SERVICE_KEY}
+  base-url: https://apis.data.go.kr/B552584/ArpltnInforInqireSvc
+  station-base-url: https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc

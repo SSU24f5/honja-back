@@ -8,8 +8,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.honjaopseoyae.domain.course.dto.response.KakaoDirectionsResponseDto;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class KakaoMobilityClient {
 
@@ -71,5 +73,27 @@ public class KakaoMobilityClient {
 	}
 
 	public record RouteSummary(int distanceMeters, int durationSeconds) {
+	}
+
+	public KakaoDirectionsResponseDto getDirectionsWithPath(
+			double originX,
+			double originY,
+			double destinationX,
+			double destinationY,
+			String priority
+	) {
+		return kakaoMobilityWebClient.get()
+				.uri(uriBuilder -> uriBuilder
+						.path("/v1/directions")
+						.queryParam("origin", originX + "," + originY)
+						.queryParam("destination", destinationX + "," + destinationY)
+						.queryParam("priority", priority)
+						.queryParam("summary", false)
+						.queryParam("road_details", false)
+						.queryParam("alternatives", false)
+						.build())
+				.retrieve()
+				.bodyToMono(KakaoDirectionsResponseDto.class)
+				.block();
 	}
 }

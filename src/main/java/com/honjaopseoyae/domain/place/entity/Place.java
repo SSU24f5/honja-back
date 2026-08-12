@@ -20,7 +20,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place extends BaseEntity {
 
-    private String title;
 
     private double mapx;                  // 경도 (kakao_x / 길찾기 정제 좌표)
 
@@ -46,10 +45,16 @@ public class Place extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PlaceType placeType;
 
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "indoor")
+    private boolean indoor; //true: 실내, false: 실외
+
     @Builder
-    private Place(String title, double mapx, double mapy, double tourMapx, double tourMapy, String image, boolean petPlace,
-                  boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType) {
-        this.title = title;
+    private Place(double mapx, double mapy, double tourMapx, double tourMapy, String image, boolean petPlace,
+        boolean barrierFree, String contentId, Integer contentType, String cat3, PlaceType placeType, String title,
+        boolean indoor) {
         this.mapx = mapx;
         this.mapy = mapy;
         this.tourMapx = tourMapx == 0.0 ? mapx : tourMapx;
@@ -61,9 +66,12 @@ public class Place extends BaseEntity {
         this.contentType = contentType;
         this.cat3 = cat3;
         this.placeType = placeType;
+        this.title = title;
+        this.indoor = indoor;
     }
 
-    public void update(String title, double mapx, double mapy, String image, boolean petPlace, boolean barrierFree, Integer contentType, String cat3) {
+    public void update(double mapx, double mapy, String image, boolean petPlace, boolean barrierFree,
+        Integer contentType, String title, boolean indoor, String cat3) {
         this.title = title;
         this.mapx = mapx;
         this.mapy = mapy;
@@ -71,7 +79,17 @@ public class Place extends BaseEntity {
         this.petPlace = petPlace;
         this.barrierFree = barrierFree;
         this.contentType = contentType;
+        this.title = title;
+        this.indoor = indoor;
         this.cat3 = cat3;
+    }
+
+    public double getLat() {
+        return this.mapy;
+    }
+
+    public double getLng() {
+        return this.mapx;
     }
 
     public void updateCoordinates(double mapx, double mapy) {
