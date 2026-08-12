@@ -193,6 +193,7 @@ public class TourApiServiceImpl implements TourApiService {
 		double mapx = parseDouble(dto.getMapx());
 		double mapy = parseDouble(dto.getMapy());
 		String image = dto.getFirstimage();
+		String title = dto.getTitle();
 		Integer contentType = parseContentType(dto.getContenttypeid());
 		String cat3 = dto.getCat3();
 
@@ -203,7 +204,7 @@ public class TourApiServiceImpl implements TourApiService {
 			return;
 		}
 
-		place.update(mapx, mapy, image, isPetPlace, isBarrierFree, contentType, cat3);
+		place.update(title, mapx, mapy, image, isPetPlace, isBarrierFree, contentType, cat3);
 		refineCoordinatesWithKakaoLocal(place, dto.getTitle());
 		saveList.add(place);
 	}

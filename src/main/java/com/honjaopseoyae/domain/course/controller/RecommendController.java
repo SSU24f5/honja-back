@@ -9,6 +9,7 @@ import com.honjaopseoyae.domain.course.service.RecommendService;
 import com.honjaopseoyae.domain.place.dto.response.TourCommonResponseDto;
 import com.honjaopseoyae.domain.user.entity.User;
 import com.honjaopseoyae.global.apipayload.ApiResponse;
+import com.honjaopseoyae.global.security.PrincipalDetails;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,8 @@ public class RecommendController {
 
 	@PostMapping("/course-order")
 	public ResponseEntity<CourseOrderRecommendResponseDto> recommendOrder(
-		@AuthenticationPrincipal User user, @Valid @RequestBody CourseOrderRecommendRequestDto request) {
-		CourseOrderRecommendResponseDto response = recommendService.recommend(user.getId(), request);
+		@AuthenticationPrincipal PrincipalDetails pd, @Valid @RequestBody CourseOrderRecommendRequestDto request) {
+		CourseOrderRecommendResponseDto response = recommendService.recommend(pd.getUserId(), request);
 		return ResponseEntity.ok(response);
 	}
 

@@ -59,6 +59,7 @@ public class CourseUpdateResponseDto {
 		private String distance;
 		private String timeTaken;
 		private String image;
+		private String title;
 		private com.honjaopseoyae.domain.place.entity.PlaceType placeType;
 		private String cat3;
 
@@ -72,6 +73,7 @@ public class CourseUpdateResponseDto {
 				.distance(coursePlace.getDistance())
 				.timeTaken(coursePlace.getTimeTaken())
 				.image(place != null ? place.getImage() : null)
+				.title(place != null ? place.getTitle() : null)
 				.placeType(place != null ? place.getPlaceType() : null)
 				.cat3(place != null ? place.getCat3() : null)
 				.build();

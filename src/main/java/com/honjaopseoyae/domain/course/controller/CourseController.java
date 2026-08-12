@@ -5,6 +5,7 @@ import com.honjaopseoyae.domain.course.dto.request.CourseInviteRequestDto;
 import com.honjaopseoyae.domain.course.dto.request.CourseUpdateRequestDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseCreateResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseDetailResponseDto;
+import com.honjaopseoyae.domain.course.dto.response.CourseInvitationExistenceResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseInvitationResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseListResponseDto;
 import com.honjaopseoyae.domain.course.dto.response.CourseUpdateResponseDto;
@@ -83,7 +84,7 @@ public class CourseController {
                     """)
     public ApiResponse<CourseCreateResponseDto> createCourse(@RequestBody @Valid CourseCreateRequestDto requestDto, @AuthenticationPrincipal PrincipalDetails pd) {
 
-        CourseCreateResponseDto response = courseService.createCourse(requestDto, 1L);
+        CourseCreateResponseDto response = courseService.createCourse(requestDto, pd.getUserId());
         return ApiResponse.onSuccess(response);
     }
 
@@ -164,6 +165,14 @@ public class CourseController {
             @AuthenticationPrincipal PrincipalDetails pd) {
         List<CourseInvitationResponseDto> response = courseService.getMyInvitations(pd.getUserId());
         return ApiResponse.onSuccess(response);
+    }
+
+    @GetMapping("/invitations/exists")
+    @Operation(summary = "대기 중인 코스 초대 존재 여부 조회 API")
+    public ApiResponse<CourseInvitationExistenceResponseDto> hasPendingInvitations(
+            @AuthenticationPrincipal PrincipalDetails pd) {
+        boolean hasPendingInvitations = courseService.hasPendingInvitations(pd.getUserId());
+        return ApiResponse.onSuccess(new CourseInvitationExistenceResponseDto(hasPendingInvitations));
     }
 
     @PostMapping("/invitations/{courseMemberId}/accept")
