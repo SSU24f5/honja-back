@@ -15,10 +15,11 @@ spring:
       hibernate:
         format_sql: true
 
-server:
-  address: 0.0.0.0
-  port: 8080
 
+kakao:
+  base-url: https://apis-navi.kakaomobility.com
+  local:
+    base-url: https://dapi.kakao.com
 jwt:
   token:
     secret: ${jwt.secret-key}
