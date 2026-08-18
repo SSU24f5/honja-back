@@ -18,7 +18,8 @@ spring:
 
 kakao:
   base-url: https://apis-navi.kakaomobility.com
-
+  local:
+    base-url: https://dapi.kakao.com
 jwt:
   token:
     secret: ${jwt.secret-key}
