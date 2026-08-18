@@ -26,11 +26,6 @@ jwt:
     expiration:
       access: 3600000
 
-kakao:
-  base-url: https://apis-navi.kakaomobility.com
-  local:
-    base-url: https://dapi.kakao.com
-
 kma:
   service-key: ${KMA_SERVICE_KEY}
   base-url: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
